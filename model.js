@@ -1,8 +1,11 @@
-// import Field from './types/field.js';
-// import HasMany from './types/hasMany.js';
-// import HasOne from './types/hasOne.js';
-// import OwnsMany from './types/ownsMany.js';
-// import Relation from './types/relation.js';
+import HasMany from './relation/hasMany.js';
+import HasOne from './relation/hasOne.js';
+import OwnsMany from './relation/ownsMany.js';
+import Relation from './relation/relation.js';
+
+const adapter = Symbol('adapter');
+const fields = Symbol('fields');
+const methods = Symbol('methods');
 
 export default class Model
 {
@@ -11,43 +14,41 @@ export default class Model
         return {};
     }
 
-    constructor(adapter)
+    constructor(a)
     {
-        this._adapter = adapter;
-        this._fields = {};
-        this._methods = {};
+        this[adapter] = a;
+        this[fields] = {};
+        this[methods] = {};
 
         for(let [k, v] of Object.entries(this.constructor.properties))
         {
-            this._fields[k] = { _name: k, value: v };
+            this[fields][k] = { _name: k, value: v };
 
-            // if(v instanceof Relation)
-            // {
-            //     v.owner = this;
-            // }
+            if(v instanceof Relation)
+            {
+                v.owner = this;
+            }
 
             Object.defineProperty(this, k, {
-                get: () => this._fields[k].value,
-                set: v => this._fields[k].value = v,
+                get: () => this[fields][k].value,
+                set: v => this[fields][k].value = v,
             })
         }
-
-        this._limit = null;
     }
 
     fetch(args)
     {
-        return this._adapter.read(args);
+        return this[adapter].read(args);
     }
 
     static fromData(data)
     {
         const inst = new this;
-        const fields = Object.values(inst._fields);
+        const f = Object.values(inst[fields]);
 
         for(let [k, v] of Object.entries(data))
         {
-            const field = fields.find(f => f._name === k);
+            const field = f.find(f => f._name === k);
 
             if(field === undefined)
             {
@@ -55,7 +56,6 @@ export default class Model
             }
 
             inst[k] = v;
-            // field.populate(v);
         }
 
         return inst;
@@ -63,11 +63,11 @@ export default class Model
 
     save()
     {
-        const m = Object.values(this._fields).every(f => f.new)
+        const m = Object.values(this[fields]).every(f => f.new)
             ? 'insert'
             : 'update';
 
-        this[m](Object.entries(this._fields).reduce((t, [k, v]) => ({ ...t, [k]: v.value }), {}));
+        this[m](Object.entries(this[fields]).reduce((t, [k, v]) => ({ ...t, [k]: v.value }), {}));
     }
 
     delete(data)
@@ -81,26 +81,32 @@ export default class Model
     }
     where(...args)
     {
-        this._adapter.where(...args)
+        this[methods].push([ 'where', args ]);
 
         return this;
     }
     select(...args)
     {
+        this[methods].push([ 'select', args ]);
+
         return this;
     }
     order(...args)
     {
+        this[methods].push([ 'order', args ]);
+
         return this;
     }
     groupBy(...args)
     {
+        this[methods].push([ 'groupBy', args ]);
+
         return this;
     }
 
     limit(l)
     {
-        this._limit = l;
+        this[methods].push([ 'limit', args ]);
 
         return this;
     }
@@ -157,23 +163,23 @@ export default class Model
 
 
 
-    // static hasMany(target)
-    // {
-    //     return new HasMany(this, target);
-    // }
-    //
-    // static ownsMany(target)
-    // {
-    //     return new OwnsMany(this, target);
-    // }
-    //
-    // static hasOne(target)
-    // {
-    //     return new HasOne(this, target);
-    // }
-    //
-    // static ownsOne(target)
-    // {
-    //     return new OwnsOne(this, target);
-    // }
+    static hasMany(target)
+    {
+        return new HasMany(this, target);
+    }
+
+    static ownsMany(target)
+    {
+        return new OwnsMany(this, target);
+    }
+
+    static hasOne(target)
+    {
+        return new HasOne(this, target);
+    }
+
+    static ownsOne(target)
+    {
+        return new OwnsOne(this, target);
+    }
 }
