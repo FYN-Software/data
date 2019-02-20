@@ -16,21 +16,42 @@ export default class Type extends EventTarget
                     return undefined;
                 }
 
-                const proto = Object.getPrototypeOf(this);
-
-                if(Object.getOwnPropertyNames(proto).includes(p))
+                // NOTE(Chris Kruining)
+                // Test if the given property(`p`)
+                // exists in the host class(`tbis`)
                 {
-                    const getter = Object.getOwnPropertyDescriptor(proto, p).get;
+                    const proto = Object.getOwnPropertyDescriptors(Object.getPrototypeOf(this));
 
-                    if(getter !== undefined)
+                    if(p in proto)
                     {
-                        return this[p];
+                        let prop = this[p];
+
+                        if(typeof prop === 'function')
+                        {
+                            prop = prop.bind(this);
+                        }
+
+                        return prop;
                     }
                 }
 
-                if(this[value].hasOwnProperty(p))
+                // NOTE(Chris Kruining)
+                // Test if the given property(`p`) exists
+                // in the wrapped value(`tbis[value]`)
                 {
-                    return this[value][p];
+                    const proto = Object.getOwnPropertyDescriptors(Object.getPrototypeOf(this[value]));
+
+                    if(p in proto)
+                    {
+                        let prop = this[value][p];
+
+                        if(typeof prop === 'function')
+                        {
+                            prop = prop.bind(this[value]);
+                        }
+
+                        return prop;
+                    }
                 }
 
                 lastP = p;
