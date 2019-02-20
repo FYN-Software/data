@@ -22,7 +22,7 @@ export default class Model
 
         for(let [k, v] of Object.entries(this.constructor.properties))
         {
-            this[fields][k] = { _name: k, value: v };
+            this[fields][k] = v;
 
             if(v instanceof Relation)
             {
@@ -30,7 +30,7 @@ export default class Model
             }
 
             Object.defineProperty(this, k, {
-                get: () => this[fields][k].value,
+                get: () => this[fields][k],
                 set: v => this[fields][k].value = v,
             })
         }
@@ -44,13 +44,10 @@ export default class Model
     static fromData(data)
     {
         const inst = new this;
-        const f = Object.values(inst[fields]);
 
         for(let [k, v] of Object.entries(data))
         {
-            const field = f.find(f => f._name === k);
-
-            if(field === undefined)
+            if(inst[fields].hasOwnProperty(k) === false)
             {
                 continue;
             }
@@ -121,7 +118,7 @@ export default class Model
 
     resolveName(name)
     {
-        return this._fields[name]._name;
+        return this[fields][name];
     }
 
     static store(data)
