@@ -1,7 +1,7 @@
 import String from './type/string.js';
-import Array from './type/array.js';
+import List from './type/list.js';
 
 export {
     String,
-    Array,
+    List,
 }
