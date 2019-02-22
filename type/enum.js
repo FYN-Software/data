@@ -24,6 +24,8 @@ export default class Enum extends Type
 
     static define(p)
     {
+        p = Object.freeze(p);
+
         const symbols = new Map();
         const c = class extends this
         {
