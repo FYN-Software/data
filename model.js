@@ -2,6 +2,7 @@ import HasMany from './relation/hasMany.js';
 import HasOne from './relation/hasOne.js';
 import OwnsMany from './relation/ownsMany.js';
 import Relation from './relation/relation.js';
+import Type from './type/type.js';
 
 const adapter = Symbol('adapter');
 const fields = Symbol('fields');
@@ -36,7 +37,7 @@ export default class Model
 
             Object.defineProperty(this, k, {
                 get: () => this[fields][k],
-                set: v => this[fields][k].value = v,
+                set: v => this[fields][k].__value = v,
             })
         }
     }
