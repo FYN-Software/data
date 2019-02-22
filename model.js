@@ -22,6 +22,11 @@ export default class Model
 
         for(let [k, v] of Object.entries(this.constructor.properties))
         {
+            if((v instanceof Type) === false)
+            {
+                throw new Error(`Model properties are expected to be typed, got '${v}'`);
+            }
+
             this[fields][k] = v;
 
             if(v instanceof Relation)
