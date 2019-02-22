@@ -1,15 +1,13 @@
 import Type from './type.js';
 
-const oldString = String;
-
 const min = Symbol('min');
 const max = Symbol('max');
 
-export default Type.proxyfy(class String extends Type
+export default class extends Type
 {
     set(v)
     {
-        return oldString(v);
+        return String(v);
     }
 
     min(i)
@@ -35,4 +33,4 @@ export default Type.proxyfy(class String extends Type
 
         return this;
     }
-});
+}

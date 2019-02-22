@@ -1,6 +1,6 @@
 import Type from './type.js';
 
-export default class String extends Type
+export default class extends Type
 {
 
 }
