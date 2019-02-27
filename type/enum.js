@@ -1,4 +1,5 @@
 import Type from './type.js';
+import { clone } from '../../core/extends.js';
 
 const properties = Symbol('properties');
 const keys = Symbol('keys');
@@ -24,7 +25,7 @@ export default class Enum extends Type
 
     static define(p)
     {
-        p = Object.freeze(p);
+        p = Object.freeze(clone(p));
 
         const symbols = new Map();
         const c = class extends this
@@ -54,7 +55,7 @@ export default class Enum extends Type
             Object.defineProperty(c.prototype, k, {
                 get()
                 {
-                    return p[symbols.get(this.__value)][k];
+                    return this.constructor[properties][symbols.get(this.__value)][k];
                 },
             });
         }
