@@ -8,6 +8,7 @@ export default class List extends Type
     {
         super();
 
+        this.__value = [];
         this[type] = Object;
     }
 
@@ -15,6 +16,8 @@ export default class List extends Type
     {
         if((v instanceof Array) === false)
         {
+            console.error(v);
+
             throw new Error(`Expected an 'Array', got '${v}'`);
         }
 
@@ -24,6 +27,23 @@ export default class List extends Type
         }
 
         return v;
+    }
+
+    push(...items)
+    {
+        if(items.some(i => (i instanceof this[type]) === false))
+        {
+            throw new Error(`Not all items are of type '${this[type].name}'`);
+        }
+
+        if(items.length > 0)
+        {
+            this.__value.push(...items);
+
+            this.emit('pushed', items);
+        }
+
+        return this;
     }
 
     get [Symbol.iterator]()
