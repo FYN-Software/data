@@ -1,6 +1,7 @@
 import '../../core/extends.js';
 
 const value = Symbol('value');
+const setter = Symbol('setter');
 
 export default class Type extends EventTarget
 {
@@ -18,6 +19,8 @@ export default class Type extends EventTarget
 
     [Symbol.toStringTag]()
     {
+        console.log('KAAS');
+
         return this.constructor.name;
     }
 
@@ -63,11 +66,6 @@ export default class Type extends EventTarget
 
         if(old !== this[value])
         {
-            if(this.constructor.name === 'Enum')
-            {
-                console.log(old, this[value]);
-            }
-
             this.emit('changed', { old, new: this[value] });
         }
     }

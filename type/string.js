@@ -41,6 +41,16 @@ export default class extends Type
         return this;
     }
 
+    static min(i)
+    {
+        return new this.min(i);
+    }
+
+    static max(i)
+    {
+        return new this.max(i);
+    }
+
     static [Symbol.hasInstance](v)
     {
         return typeof v === 'string' || v.constructor === this;
