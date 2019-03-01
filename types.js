@@ -4,6 +4,7 @@ import Enum from './type/enum.js';
 import Boolean from './type/boolean.js';
 import Number from './type/number.js';
 import Datetime from './type/datetime.js';
+import Object from './type/object.js';
 
 export {
     String,
@@ -12,4 +13,5 @@ export {
     Boolean,
     Number,
     Datetime,
+    Object,
 }
