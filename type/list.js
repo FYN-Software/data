@@ -16,8 +16,6 @@ export default class List extends Type
     {
         if((v instanceof Array) === false)
         {
-            console.error(v);
-
             throw new Error(`Expected an 'Array', got '${v}'`);
         }
 
