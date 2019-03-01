@@ -6,7 +6,7 @@ const keys = Symbol('keys');
 
 export default class Enum extends Type
 {
-    set(v)
+    __set(v)
     {
         if((v instanceof this.constructor) === false)
         {

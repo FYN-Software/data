@@ -7,6 +7,8 @@ export default class Type extends EventTarget
     constructor()
     {
         super();
+
+        this[setter] = v => v;
     }
 
     [Symbol.toPrimitive]()
@@ -19,14 +21,26 @@ export default class Type extends EventTarget
         return this.constructor.name;
     }
 
-    set(v)
+    set(cb)
+    {
+        if(typeof cb !== 'function')
+        {
+            throw new Error(`Expected a callable, got '${cb}'`);
+        }
+
+        this[setter] = cb;
+
+        return this;
+    }
+
+    __set(v)
     {
         return v;
     }
 
     default(v)
     {
-        this[value] = this.set(v);
+        this[value] = this.__set(this[setter].apply(this, [ v ]));
 
         return this;
     }
@@ -45,7 +59,7 @@ export default class Type extends EventTarget
     {
         const old = this[value];
 
-        this[value] = this.set(v);
+        this[value] = this.__set(this[setter].apply(this, [ v ]));
 
         if(old !== this[value])
         {

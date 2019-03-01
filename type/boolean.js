@@ -2,7 +2,7 @@ import Type from './type.js';
 
 export default class extends Type
 {
-    set(v)
+    __set(v)
     {
         return Boolean(v);
     }

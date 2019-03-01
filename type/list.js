@@ -12,7 +12,7 @@ export default class List extends Type
         this[type] = Object;
     }
 
-    set(v)
+    __set(v)
     {
         if((v instanceof Array) === false)
         {

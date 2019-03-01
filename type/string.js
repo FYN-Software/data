@@ -5,7 +5,14 @@ const max = Symbol('max');
 
 export default class extends Type
 {
-    set(v)
+    constructor()
+    {
+        super();
+
+        this.default('');
+    }
+
+    __set(v)
     {
         return String(v);
     }
