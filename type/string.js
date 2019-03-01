@@ -40,4 +40,9 @@ export default class extends Type
 
         return this;
     }
+
+    static [Symbol.hasInstance](v)
+    {
+        return typeof v === 'string' || v.constructor === this;
+    }
 }

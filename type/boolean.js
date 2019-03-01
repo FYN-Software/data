@@ -6,4 +6,9 @@ export default class extends Type
     {
         return Boolean(v);
     }
+
+    static [Symbol.hasInstance](v)
+    {
+        return typeof v === 'boolean' || v.constructor === this;
+    }
 }
