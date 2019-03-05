@@ -19,8 +19,6 @@ export default class Type extends EventTarget
 
     [Symbol.toStringTag]()
     {
-        console.log('KAAS');
-
         return this.constructor.name;
     }
 
@@ -34,6 +32,11 @@ export default class Type extends EventTarget
         this[setter] = cb;
 
         return this;
+    }
+
+    static set(cb)
+    {
+        return (new this).set(cb);
     }
 
     __set(v)

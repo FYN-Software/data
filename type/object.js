@@ -22,10 +22,16 @@ export default class extends Type
             {
                 super();
 
-                for(const [ k, v ] of Object.entries(clone(this.constructor[structure])))
+                for(const [ k, p ] of Object.entries(Object.assign({}, this.constructor[structure])))
                 {
-                    Object.defineProperty(this, k, { value: v });
+                    Object.defineProperty(this, k, {
+                        get: () => p.__value,
+                        set: v => p.__value = v,
+                        enumerable: true,
+                    });
                 }
+
+                this.__value = this;
             }
 
             static get [structure]()
@@ -33,5 +39,17 @@ export default class extends Type
                 return p;
             }
         };
+    }
+
+    static [Symbol.hasInstance](v)
+    {
+        if(this.hasOwnProperty(structure) === false)
+        {
+            return typeof v === 'object';
+        }
+
+        console.log(this, this.hasOwnProperty(structure), v);
+
+        return true;
     }
 }

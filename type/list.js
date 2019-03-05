@@ -16,11 +16,15 @@ export default class List extends Type
     {
         if((v instanceof Array) === false)
         {
+            console.log(v);
+
             throw new Error(`Expected an 'Array', got '${v}'`);
         }
 
         if(v.some(i => (i instanceof this[type]) === false))
         {
+            console.log(v, this[type]);
+
             throw new Error(`Not all items are of type '${this[type].name}'`);
         }
 

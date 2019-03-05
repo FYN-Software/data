@@ -9,21 +9,26 @@ export default class extends Type
     {
         super();
 
-        this.default(0);
         this[min] = -Infinity;
         this[max] = Infinity;
+        this.default(0);
     }
 
     __set(v)
     {
+        if(Number.isNaN(v) === true)
+        {
+            throw new Error(`Given value is NaN`);
+        }
+
         return Math.clamp(this[min], this[max], v);
     }
 
     min(i)
     {
-        if(Number.isInteger(i) === false || i < 0)
+        if(Number.isInteger(i) === false)
         {
-            throw new Error(`Expected an unsigned integer, got '${i}'`);
+            throw new Error(`Expected an integer, got '${i}'`);
         }
 
         this[min] = i;
@@ -33,9 +38,9 @@ export default class extends Type
 
     max(i)
     {
-        if(Number.isInteger(i) === false || i < 0)
+        if(Number.isInteger(i) === false)
         {
-            throw new Error(`Expected an unsigned integer, got '${i}'`);
+            throw new Error(`Expected an integer, got '${i}'`);
         }
 
         this[max] = i;
@@ -45,12 +50,12 @@ export default class extends Type
 
     static min(i)
     {
-        return new this.min(i);
+        return (new this).min(i);
     }
 
     static max(i)
     {
-        return new this.max(i);
+        return (new this).max(i);
     }
 
     static [Symbol.hasInstance](v)
