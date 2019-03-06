@@ -2,6 +2,7 @@ import '../../core/extends.js';
 
 const value = Symbol('value');
 const setter = Symbol('setter');
+const renderers = Symbol('renderers');
 
 export default class Type extends EventTarget
 {
@@ -10,10 +11,13 @@ export default class Type extends EventTarget
         super();
 
         this[setter] = v => v;
+        this[renderers] = new Map();
     }
 
-    [Symbol.toPrimitive]()
+    [Symbol.toPrimitive](hint)
     {
+        console.log(hint);
+
         return this[value];
     }
 
@@ -71,5 +75,10 @@ export default class Type extends EventTarget
         {
             this.emit('changed', { old, new: this[value] });
         }
+    }
+
+    get renders()
+    {
+        return this[renderers];
     }
 }
