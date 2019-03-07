@@ -1,4 +1,4 @@
-import '../../core/extends.js';
+import { equals } from '../../core/extends.js';
 
 const value = Symbol('value');
 const setter = Symbol('setter');
@@ -71,7 +71,7 @@ export default class Type extends EventTarget
 
         this[value] = this.__set(this[setter].apply(this, [ v ]));
 
-        if(old !== this[value])
+        if(equals(old, this[value]) === false)
         {
             this.emit('changed', { old, new: this[value] });
         }
