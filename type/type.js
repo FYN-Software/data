@@ -16,7 +16,7 @@ export default class Type extends EventTarget
 
     [Symbol.toPrimitive](hint)
     {
-        console.log(hint);
+        // console.log(hint);
 
         return this[value];
     }

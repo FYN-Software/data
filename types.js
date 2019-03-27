@@ -1,3 +1,4 @@
+import Type from './type/type.js';
 import String from './type/string.js';
 import List from './type/list.js';
 import Enum from './type/enum.js';
@@ -7,6 +8,7 @@ import Datetime from './type/datetime.js';
 import Object from './type/object.js';
 
 export {
+    Type,
     String,
     List,
     Enum,
