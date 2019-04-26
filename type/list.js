@@ -14,6 +14,11 @@ export default class List extends Type
 
     __set(v)
     {
+        if(v instanceof Promise)
+        {
+            return v.then(v => this.__set(v));
+        }
+
         if((v instanceof Array) === false)
         {
             throw new Error(`Expected an 'Array', got '${v}'`);

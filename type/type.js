@@ -50,14 +50,7 @@ export default class Type extends EventTarget
 
     default(v)
     {
-        if(v instanceof Promise)
-        {
-            v.then(v => this.default(v));
-        }
-        else
-        {
-            this[value] = this.__set(this[setter].apply(this, [ v ]));
-        }
+        this[value] = this.__set(this[setter].apply(this, [ v ]));
 
         return this;
     }
@@ -76,7 +69,9 @@ export default class Type extends EventTarget
     {
         if(v instanceof Promise)
         {
-            return v.then(v => this.__value = v);
+            v.then(v => this.__value = v);
+
+            return;
         }
 
         const old = this[value];
