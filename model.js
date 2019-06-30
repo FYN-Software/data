@@ -1,3 +1,6 @@
+import Component from '../component/component.js';
+import Button from '../suite/js/common/form/button.js';
+import Form from '../suite/js/common/form/form.js';
 import HasMany from './relation/hasMany.js';
 import HasOne from './relation/hasOne.js';
 import OwnsMany from './relation/ownsMany.js';
@@ -125,6 +128,56 @@ export default class Model
     resolveName(name)
     {
         return this[fields][name];
+    }
+
+    async toComponent()
+    {
+        const component = new (Component.register(this.constructor.view, `${this.constructor.name.toLowerCase()}-model`));
+
+        const form = new Form;
+
+        for(const [ key, prop ] of Object.entries(this[fields]))
+        {
+            form.appendChild(await prop.toComponent());
+        }
+
+        const submit = new Button;
+        submit.textContent = 'Save';
+        submit.slot = 'buttons';
+        submit.setAttribute('action', 'submit');
+        submit.setAttribute('primary', '');
+        form.appendChild(submit);
+
+        const cancel = new Button;
+        cancel.textContent = 'Cancel';
+        cancel.setAttribute('action', 'cancel');
+        cancel.slot = 'buttons';
+        form.appendChild(cancel);
+
+        component.appendChild(form);
+
+        return component;
+    }
+
+    static get view()
+    {
+        const props = this.constructor.properties;
+
+        return class extends Component
+        {
+            constructor()
+            {
+                super(Promise.resolve(null));
+
+                const style = document.createElement('style');
+                style.innerText = ':host { display: contents; }';
+
+                const slot = document.createElement('slot');
+
+                this.shadow.appendChild(style);
+                this.shadow.appendChild(slot);
+            }
+        }
     }
 
     static store(data)

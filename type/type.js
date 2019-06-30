@@ -26,6 +26,11 @@ export default class Type extends EventTarget
         return this.constructor.name;
     }
 
+    async toComponent()
+    {
+        return new (await this.constructor.view);
+    }
+
     set(cb)
     {
         if(typeof cb !== 'function')
@@ -87,5 +92,10 @@ export default class Type extends EventTarget
     get renders()
     {
         return this[renderers];
+    }
+
+    static get view()
+    {
+        return import('../../suite/js/common/form/input.js').then(m => m.default);
     }
 }
