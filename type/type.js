@@ -2,6 +2,7 @@ import { equals } from '../../core/extends.js';
 
 const value = Symbol('value');
 const setter = Symbol('setter');
+const name = Symbol('setter');
 const renderers = Symbol('renderers');
 
 export default class Type extends EventTarget
@@ -12,6 +13,7 @@ export default class Type extends EventTarget
 
         this[setter] = v => v;
         this[renderers] = new Map();
+        this[name] = '';
     }
 
     [Symbol.toPrimitive](hint)
@@ -28,7 +30,11 @@ export default class Type extends EventTarget
 
     async toComponent()
     {
-        return new (await this.constructor.view);
+        const component = new (await this.constructor.view);
+        component.name = this[name];
+        component.label = this[name].capitalize();
+
+        return component;
     }
 
     set(cb)
@@ -92,6 +98,11 @@ export default class Type extends EventTarget
     get renders()
     {
         return this[renderers];
+    }
+
+    set name(n)
+    {
+        this[name] = n;
     }
 
     static get view()

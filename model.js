@@ -138,6 +138,7 @@ export default class Model
 
         for(const [ key, prop ] of Object.entries(this[fields]))
         {
+            prop.name = key;
             form.appendChild(await prop.toComponent());
         }
 
