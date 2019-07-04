@@ -1,4 +1,3 @@
-import { clone } from '../../core/extends.js';
 import Type from './type.js';
 
 const structure = Symbol('structure');
