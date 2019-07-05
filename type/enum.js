@@ -1,5 +1,4 @@
 import Type from './type.js';
-import { clone } from '../../core/extends.js';
 
 const properties = Symbol('properties');
 const keys = Symbol('keys');
