@@ -1,0 +1,20 @@
+{
+    "name": "@fyn-software/data",
+    "description": "FYN Data",
+    "version": "0.0.1",
+    "main": "model.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/FYN-Software/data"
+    },
+    "keywords": [],
+    "author": "Chris Kruining",
+    "license": "BSD",
+    "bugs": {
+        "url": "https://github.com/FYN-Software/data/issues"
+    },
+    "homepage": "https://fyn-software.github.io",
+    "publishConfig": {
+        "access": "public"
+    }
+}
