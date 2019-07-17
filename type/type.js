@@ -59,6 +59,23 @@ export default class Type extends EventTarget
         return v;
     }
 
+    async setValue(v)
+    {
+        if(v instanceof Promise)
+        {
+            v = await v;
+        }
+
+        const old = this[value];
+
+        this[value] = this.__set(this[setter].apply(this, [ v ]));
+
+        if(equals(old, this[value]) === false)
+        {
+            this.emit('changed', { old, new: this[value] });
+        }
+    }
+
     default(v)
     {
         this[value] = this.__set(this[setter].apply(this, [ v ]));
@@ -78,6 +95,8 @@ export default class Type extends EventTarget
 
     set __value(v)
     {
+        this.setValue(v);
+
         if(v instanceof Promise)
         {
             v.then(v => this.__value = v);
@@ -88,6 +107,11 @@ export default class Type extends EventTarget
         const old = this[value];
 
         this[value] = this.__set(this[setter].apply(this, [ v ]));
+
+        // if(this.constructor.name === 'List')
+        // {
+        //     console.log(old, this[value], equals(old, this[value]));
+        // }
 
         if(equals(old, this[value]) === false)
         {
