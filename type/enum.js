@@ -38,6 +38,16 @@ export default class Enum extends Type
             {
                 return symbols;
             }
+
+            static *[Symbol.iterator]()
+            {
+                for(const [k, v] of Object.entries(p))
+                {
+                    v.value = k;
+
+                    yield v;
+                }
+            }
         };
 
         for(const k of Object.keys(p))
