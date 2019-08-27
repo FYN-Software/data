@@ -51,4 +51,22 @@ export default class extends Type
 
         return true;
     }
+
+    static fromClass(c)
+    {
+        console.dir(c);
+
+        return class extends c
+        {
+            static get [Symbol.species]()
+            {
+                return Type;
+            }
+
+            get __value()
+            {
+                return this;
+            }
+        };
+    }
 }
