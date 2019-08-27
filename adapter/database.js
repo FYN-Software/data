@@ -26,11 +26,9 @@ export default class Database
         ];
     }
 
-    read(args)
+    async read(args)
     {
-        return this._connection
-            .query('debug', this._schema.database, this.sql, JSON.stringify(args))
-            .then(r => JSON.parse(r).rows);
+        return this._connection.query(this.sql, JSON.stringify(args));
     }
 
     where(...args)

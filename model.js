@@ -1,6 +1,3 @@
-import Component from '../component/component.js';
-import Button from '../suite/js/common/form/button.js';
-import Form from '../suite/js/common/form/form.js';
 import HasMany from './relation/hasMany.js';
 import HasOne from './relation/hasOne.js';
 import OwnsMany from './relation/ownsMany.js';
@@ -11,7 +8,7 @@ const adapter = Symbol('adapter');
 const fields = Symbol('fields');
 const methods = Symbol('methods');
 
-export default class Model
+export default class Model extends Type
 {
     static get properties()
     {
@@ -20,6 +17,8 @@ export default class Model
 
     constructor(a)
     {
+        super();
+
         this[adapter] = a;
         this[fields] = {};
         this[methods] = {};

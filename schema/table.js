@@ -1,21 +1,26 @@
-const database = Symbol('database');
-const table = Symbol('table');
+const _database = Symbol('database');
+const _table = Symbol('table');
 
 export default class Table
 {
     constructor(database = '', table = '')
     {
-        this[database] = database;
-        this[table] = table;
+        this[_database] = database;
+        this[_table] = table;
     }
 
     get database()
     {
-        return this[database];
+        return this[_database];
     }
 
     get table()
     {
-        return this[table];
+        return this[_table];
+    }
+
+    static get Types()
+    {
+
     }
 }
