@@ -2,11 +2,17 @@ import Type from './type.js';
 
 const properties = Symbol('properties');
 const keys = Symbol('keys');
+const values = Symbol('values');
 
 export default class Enum extends Type
 {
     __set(v)
     {
+        if(typeof v === 'string' && this.constructor[values].has(v))
+        {
+            v = this.constructor[values].get(v);
+        }
+
         if((v instanceof this.constructor) === false)
         {
             const k = Array.from(this.constructor[keys].values(), k => `'${k}'`);
@@ -27,6 +33,7 @@ export default class Enum extends Type
         p = Object.seal(Object.assign({}, p));
 
         const symbols = new Map();
+        const names = new Map();
         const c = class extends this
         {
             static get [properties]()
@@ -37,6 +44,11 @@ export default class Enum extends Type
             static get [keys]()
             {
                 return symbols;
+            }
+
+            static get [values]()
+            {
+                return names;
             }
 
             static *[Symbol.iterator]()
@@ -55,6 +67,7 @@ export default class Enum extends Type
             const s = Symbol(k);
 
             symbols.set(s, k);
+            names.set(k, s);
 
             Object.defineProperty(c, k, { value: s });
         }
