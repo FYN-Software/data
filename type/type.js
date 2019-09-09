@@ -2,7 +2,7 @@ import { equals } from '../../core/extends.js';
 
 const value = Symbol('value');
 const setter = Symbol('setter');
-const name = Symbol('setter');
+const name = Symbol('name');
 const renderers = Symbol('renderers');
 
 export default class Type extends EventTarget
