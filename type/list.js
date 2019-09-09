@@ -9,7 +9,7 @@ export default class List extends Type
         super();
 
         this.__value = [];
-        this[type] = Object;
+        this[type] = null;
     }
 
     __set(v)
@@ -24,7 +24,7 @@ export default class List extends Type
             throw new Error(`Expected an 'Array', got '${v}'`);
         }
 
-        if(v.some(i => (i instanceof this[type]) === false))
+        if(this[type] !== null && v.some(i => (i instanceof this[type]) === false))
         {
             throw new Error(`Not all items are of type '${this[type].name}'`);
         }
