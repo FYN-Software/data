@@ -23,7 +23,11 @@ export default class extends Type
 
                 for(const [ k, p ] of Object.entries(Object.assign({}, this.constructor[structure])))
                 {
-                    p.on({ changed: () => this.emit('changed') });
+                    try
+                    {
+                        p.on({ changed: () => this.emit('changed') });
+                    }
+                    catch {}
 
                     Object.defineProperty(this, k, {
                         get: () => p.__value,
