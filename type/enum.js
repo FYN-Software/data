@@ -36,6 +36,18 @@ export default class Enum extends Type
         const names = new Map();
         const c = class extends this
         {
+            [Symbol.toPrimitive](hint)
+            {
+                switch (hint)
+                {
+                    case 'string':
+                        return symbols.get(this.__value);
+
+                    default:
+                        return this;
+                }
+            }
+
             static get [properties]()
             {
                 return p;

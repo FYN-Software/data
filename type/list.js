@@ -19,9 +19,9 @@ export default class List extends Type
             return v.then(v => this.__set(v));
         }
 
-        if((v instanceof Array) === false)
+        if(Array.isArray(v) === false)
         {
-            throw new Error(`Expected an 'Array', got '${v}'`);
+            throw new Error(`Expected an 'Array', got '${v.constructor.name}'`);
         }
 
         if(this[type] !== null && v.some(i => (i instanceof this[type]) === false))
