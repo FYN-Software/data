@@ -1,15 +1,14 @@
 import Type from './type.js';
 
-const type = Symbol('type');
-
 export default class List extends Type
 {
+    #type = null;
+
     constructor()
     {
         super();
 
-        this.__value = [];
-        this[type] = null;
+        this.setValue([]);
     }
 
     __set(v)
@@ -24,9 +23,9 @@ export default class List extends Type
             throw new Error(`Expected an 'Array', got '${v.constructor.name}'`);
         }
 
-        if(this[type] !== null && v.some(i => (i instanceof this[type]) === false))
+        if(this.#type !== null && v.some(i => (i instanceof this.#type) === false))
         {
-            throw new Error(`Not all items are of type '${this[type].name}'`);
+            throw new Error(`Not all items are of type '${this.#type.name}'`);
         }
 
         return v;
@@ -34,9 +33,9 @@ export default class List extends Type
 
     push(...items)
     {
-        if(items.some(i => (i instanceof this[type]) === false))
+        if(items.some(i => (i instanceof this.#type) === false))
         {
-            throw new Error(`Not all items are of type '${this[type].name}'`);
+            throw new Error(`Not all items are of type '${this.#type.name}'`);
         }
 
         if(items.length > 0)
@@ -56,7 +55,7 @@ export default class List extends Type
 
     type(t)
     {
-        this[type] = t;
+        this.#type = t;
 
         return this;
     }

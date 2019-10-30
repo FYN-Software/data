@@ -1,39 +1,34 @@
 import Type from './type.js';
 
-const hue = Symbol('hue');
-const saturation = Symbol('saturation');
-const lightness = Symbol('lightness');
-const alpha = Symbol('alpha');
-
 export default class extends Type
 {
+    #hue = .5;
+    #saturation = .5;
+    #lightness = .5;
+    #alpha = .5;
+
     constructor()
     {
         super();
-
-        this[hue] = .5;
-        this[saturation] = .5;
-        this[lightness] = .5;
-        this[alpha] = .5;
     }
 
     get hue()
     {
-        return this[hue];
+        return this.#hue;
     }
 
     get saturation()
     {
-        return this[saturation];
+        return this.#saturation;
     }
 
     get lightness()
     {
-        return this[lightness];
+        return this.#lightness;
     }
 
     get alpha()
     {
-        return this[alpha];
+        return this.#alpha;
     }
 }

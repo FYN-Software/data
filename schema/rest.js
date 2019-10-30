@@ -1,26 +1,18 @@
-import Enum from '../../../node_modules/@fyn-software/data/type/enum.js';
+import Schema from './schema.js';
 
-const endpoints = Enum.define({
-    Bitbucket: 'https://toolkit.fyn.nl/bitbucket/{{ project }}/repos/{{ repository }}/{{ table }}/',
-});
-
-export default class Rest
+export default class Rest extends Schema
 {
-    constructor(endpoint = endpoints.Bitbucket, project, repository, table)
+    #path;
+
+    constructor(path)
     {
-        this.endpoint = endpoint;
-        this.project = project;
-        this.repository = repository;
-        this.table = table;
+        super();
+
+        this.#path = path;
     }
 
-    get url()
+    prepare(query)
     {
-        return endpoints.valueOf(this.endpoint).replace(/{{\s*([a-zA-Z]+)\s*}}/g, (w, m) => this[m]);
-    }
-
-    static get Endpoints()
-    {
-        return endpoints;
+        return `${this.#path}?${Array.from(query, ([ method, args ]) => `${method}=${encodeURIComponent(JSON.stringify(args))}`).join('&')}`;
     }
 }

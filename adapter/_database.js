@@ -8,11 +8,14 @@ const closures = [
 
 export default class Database
 {
+    #schema;
+    #connection;
+    #closures;
+
     constructor(schema)
     {
-        this._schema = schema;
-        this._connection = undefined;
-        this._closures = [
+        this.#schema = schema;
+        this.#closures = [
             {
                 type: 'from',
                 get value()
@@ -28,17 +31,17 @@ export default class Database
 
     async read(args)
     {
-        return this._connection.query(this.sql, JSON.stringify(args));
+        return this.#connection.query(this.sql, JSON.stringify(args));
     }
 
     where(...args)
     {
-        this._closures.push(...args.map(a => ({ type: 'where', value: a })))
+        this.#closures.push(...args.map(a => ({ type: 'where', value: a })))
     }
 
     get sql()
     {
-        let parts = this._closures
+        let parts = this.#closures
             .reduce(
                 (t, c) => {
                     t.has(c.type)

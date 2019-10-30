@@ -1,13 +1,15 @@
 export default class Api
 {
+    #schema;
+
     constructor(schema)
     {
-        this._schema = schema;
+        this.#schema = schema;
     }
 
     async read(args)
     {
-        const base = this._schema.url;
+        const base = this.#schema.url;
         const options = {
             credentials: 'same-origin',
             headers: {
@@ -16,15 +18,5 @@ export default class Api
         };
 
         return [ await fetch(`${base}${Object.values(args).join('/')}`, options).then(r => r.json()) ];
-    }
-
-    where(...args)
-    {
-        // console.log(args.map(a => a.match(/`([a-zA-Z_]+)`\s*.\s*@([a-zA-Z_]+)/).slice(1, 3)));
-    }
-
-    order(...args)
-    {
-        // console.log(args);
     }
 }

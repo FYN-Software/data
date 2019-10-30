@@ -1,36 +1,42 @@
+import Query from './query/query.js';
 import HasMany from './relation/hasMany.js';
 import HasOne from './relation/hasOne.js';
 import OwnsMany from './relation/ownsMany.js';
 import Relation from './relation/relation.js';
 import Type from './type/type.js';
+import ObjectType from './type/object.js';
 
-const adapter = Symbol('adapter');
-const fields = Symbol('fields');
-const methods = Symbol('methods');
-
-export default class Model extends Type
+export default class Model extends ObjectType
 {
     static get properties()
     {
         return {};
     }
 
-    constructor(a)
+    #sources = new Map();
+    #fields = {};
+    #query = new Query(this);
+    #raw = false;
+
+    constructor(sources)
     {
         super();
 
-        this[adapter] = a;
-        this[fields] = {};
-        this[methods] = {};
+        this.#sources = new Map(Object.entries(sources));
 
         for(let [k, v] of Object.entries(this.constructor.properties))
         {
+            if((v instanceof Type) === false && v.prototype instanceof Type)
+            {
+                v = new v;
+            }
+
             if((v instanceof Type) === false)
             {
                 throw new Error(`Model properties are expected to be typed, got '${v}'`);
             }
 
-            this[fields][k] = v;
+            this.#fields[k] = v;
 
             if(v instanceof Relation)
             {
@@ -38,15 +44,15 @@ export default class Model extends Type
             }
 
             Object.defineProperty(this, k, {
-                get: () => this[fields][k],
-                set: v => this[fields][k].__value = v,
+                get: () => this.#fields[k],
+                set: this.#fields[k].setValue.bind(this.#fields[k]),
             })
         }
     }
 
-    fetch(args)
+    async *fetch(query, args)
     {
-        return this[adapter].read(args);
+        yield* this.#sources.get('default').fetch(query, args);
     }
 
     static fromData(data)
@@ -55,7 +61,7 @@ export default class Model extends Type
 
         for(let [k, v] of Object.entries(data))
         {
-            if(inst[fields].hasOwnProperty(k) === false)
+            if(inst.#fields.hasOwnProperty(k) === false)
             {
                 continue;
             }
@@ -68,174 +74,148 @@ export default class Model extends Type
 
     save()
     {
-        const m = Object.values(this[fields]).every(f => f.new)
-            ? 'insert'
-            : 'update';
-
-        this[m](Object.entries(this[fields]).reduce((t, [k, v]) => ({ ...t, [k]: v.value }), {}));
+        throw new Error(`TODO: Implement method`);
     }
 
-    delete(data)
+    async find(query, args = {})
     {
-        console.log('Deleting', data);
-    }
+        const iterator = this.fetch(query, args);
+        const v = (await iterator.next()).value;
 
-    from(identifier)
-    {
-        return this;
-    }
-    where(...args)
-    {
-        this[methods].push([ 'where', args ]);
+        iterator.return();
 
-        return this;
-    }
-    select(...args)
-    {
-        this[methods].push([ 'select', args ]);
+        if(this.#raw === true)
+        {
+            return r;
+        }
 
-        return this;
+        return v === undefined
+            ? null
+            : this.constructor.fromData(v);
     }
-    order(...args)
+    async *findAll(query, args = {})
     {
-        this[methods].push([ 'order', args ]);
+        if(this.#raw === true)
+        {
+            yield* this.fetch(query, args);
 
-        return this;
-    }
-    groupBy(...args)
-    {
-        this[methods].push([ 'groupBy', args ]);
+            return;
+        }
 
-        return this;
-    }
+        for await (const r of this.fetch(query, args))
+        {
+            console.log(r);
 
-    limit(l)
-    {
-        this[methods].push([ 'limit', args ]);
-
-        return this;
-    }
-    find(args = {})
-    {
-        return this.fetch(args).then(r => r.length === 0 ? null : this.constructor.fromData(r[0]));
-    }
-    findAll(args = {})
-    {
-        return this.fetch(args).then(r => (r || []).map(e => this.constructor.fromData(e)));
+            yield this.constructor.fromData(r);
+        }
     }
 
     resolveName(name)
     {
-        return this[fields][name];
+        return this.#fields[name];
     }
 
-    async toComponent()
-    {
-        const component = new (Component.register(this.constructor.view, `${this.constructor.name.toLowerCase()}-model`));
-
-        const form = new Form;
-
-        for(const [ key, prop ] of Object.entries(this[fields]))
-        {
-            prop.name = key;
-            form.appendChild(await prop.toComponent());
-        }
-
-        const submit = new Button;
-        submit.textContent = 'Save';
-        submit.slot = 'buttons';
-        submit.setAttribute('action', 'submit');
-        submit.setAttribute('primary', '');
-        form.appendChild(submit);
-
-        const cancel = new Button;
-        cancel.textContent = 'Cancel';
-        cancel.setAttribute('action', 'cancel');
-        cancel.slot = 'buttons';
-        form.appendChild(cancel);
-
-        component.appendChild(form);
-
-        return component;
-    }
-
-    static get view()
-    {
-        const props = this.constructor.properties;
-
-        return class extends Component
-        {
-            constructor()
-            {
-                super(Promise.resolve(null));
-
-                const style = document.createElement('style');
-                style.innerText = ':host { display: contents; }';
-
-                const slot = document.createElement('slot');
-
-                this.shadow.appendChild(style);
-                this.shadow.appendChild(slot);
-            }
-        }
-    }
-
-    static store(data)
-    {
-        return new this();
-    }
-    static from(identifier)
-    {
-        return new this().from(identifier);
-    }
     static where(...args)
     {
-        return (new this).where(...args);
+        return new Query(new this).where(...args);
     }
     static select(...args)
     {
-        return new this().select(...args);
+        return new Query(new this).select(...args);
     }
     static order(...args)
     {
-        return new this().order(...args);
+        return new Query(new this).order(...args);
     }
     static limit(...args)
     {
-        return new this().limit(...args);
+        return new Query(new this).limit(...args);
     }
-    static groupBy(...args)
+    static async find(...args)
     {
-        return new this().groupBy(...args);
+        return new this.find(...args);
     }
-    static find(...args)
+    static async *findAll(...args)
     {
-        return new this().find(...args);
-    }
-    static findAll(...args)
-    {
-        return new this().findAll(...args);
+        yield* new this.findAll(...args);
     }
 
-
-
-    static hasMany(target)
+    static initialize(model)
     {
-        return new HasMany(this, target);
-    }
+        if((model.prototype instanceof this) === false)
+        {
+            throw new Error(`Expected a '${this.name}', got '${model}' instead`);
+        }
 
-    static ownsMany(target)
-    {
-        return new OwnsMany(this, target);
-    }
+        const Field = class Field
+        {
+            #name;
+            #type;
+            #operation;
+            #value;
 
-    static hasOne(target)
-    {
-        return new HasOne(this, target);
-    }
+            constructor(name, type)
+            {
+                this.#name = name;
+                this.#type = type;
+            }
 
-    static ownsOne(target)
-    {
-        return new OwnsOne(this, target);
+            isEqualTo(value)
+            {
+                this.#operation = '=';
+                this.#value = value;
+
+                return this;
+            }
+
+            isNotEqualTo(value)
+            {
+                this.#operation = '!=';
+                this.#value = value;
+
+                return this;
+            }
+
+            isGreaterThan(value)
+            {
+                this.#operation = '>';
+                this.#value = value;
+
+                return this;
+            }
+
+            isGreaterThanOrEqualTo(value)
+            {
+                this.#operation = '>=';
+                this.#value = value;
+
+                return this;
+            }
+
+            isLessThan(value)
+            {
+                this.#operation = '<';
+                this.#value = value;
+
+                return this;
+            }
+
+            isLessThanOrEqualTo(value)
+            {
+                this.#operation = '<=';
+                this.#value = value;
+
+                return this;
+            }
+        };
+
+        for(const [ name, type ] of Object.entries(model.properties))
+        {
+            Object.defineProperty(model, name, {
+                value: new Field(name, type),
+                writable: false,
+                enumerable: true,
+            });
+        }
     }
 }

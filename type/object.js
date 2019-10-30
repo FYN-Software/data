@@ -8,12 +8,26 @@ export default class extends Type
     {
         super();
 
-        this.default(null);
+        this.default({});
     }
 
     static define(p)
     {
-        p = Object.freeze(p);
+        const normalize = (node) => {
+            for(const k of Object.getOwnPropertyNames(node))
+            {
+                if((node[k] instanceof Type) === false && (node[k].prototype instanceof Type) === true)
+                {
+                    node[k] = new node[k]();
+                }
+                else if(typeof p[k] === 'object')
+                {
+                    normalize(p[k]);
+                }
+            }
+        };
+
+        p = Object.freeze(normalize(p));
 
         return class extends this
         {
@@ -21,8 +35,13 @@ export default class extends Type
             {
                 super();
 
-                for(const [ k, p ] of Object.entries(Object.assign({}, this.constructor[structure])))
+                for(const [ k, p ] of Object.entries({ ...this.constructor[structure] }))
                 {
+                    if((p instanceof Type) === false && (p.prototype instanceof Type) === true)
+                    {
+                        this.constructor[structure][k] = new p();
+                    }
+
                     try
                     {
                         p.on({ changed: () => this.emit('changed') });
@@ -31,17 +50,17 @@ export default class extends Type
 
                     Object.defineProperty(this, k, {
                         get: () => p.__value,
-                        set: v => p.__value = v,
+                        set: p.setValue.bind(p),
                         enumerable: true,
                     });
                 }
 
-                this.__value = this;
+                this.setValue(this);
             }
 
             static get [structure]()
             {
-                return p;
+                return { ...p };
             }
         };
     }

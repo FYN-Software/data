@@ -1,25 +1,20 @@
 import { equals } from '../../core/extends.js';
 
 const value = Symbol('value');
-const setter = Symbol('setter');
-const name = Symbol('name');
-const renderers = Symbol('renderers');
 
 export default class Type extends EventTarget
 {
+    #setter = v => v;
+    #name = '';
+    #value = null;
+
     constructor()
     {
         super();
-
-        this[setter] = v => v;
-        this[renderers] = new Map();
-        this[name] = '';
     }
 
     [Symbol.toPrimitive](hint)
     {
-        // console.log(hint);
-
         return this[value];
     }
 
@@ -31,8 +26,8 @@ export default class Type extends EventTarget
     async toComponent()
     {
         const component = new (await this.constructor.view);
-        component.name = this[name];
-        component.label = this[name].capitalize();
+        component.name = this.#name;
+        component.label = this.#name.capitalize();
 
         return component;
     }
@@ -44,7 +39,7 @@ export default class Type extends EventTarget
             throw new Error(`Expected a callable, got '${cb}'`);
         }
 
-        this[setter] = cb;
+        this.#setter = cb;
 
         return this;
     }
@@ -66,19 +61,19 @@ export default class Type extends EventTarget
             v = await v;
         }
 
-        const old = this[value];
+        const old = this.#value;
 
-        this[value] = this.__set(this[setter].apply(this, [ v ]));
+        this.#value = this.__set(this.#setter.apply(this, [ v ]));
 
-        if(equals(old, this[value]) === false)
+        if(equals(old, this.#value) === false)
         {
-            this.emit('changed', { old, new: this[value] });
+            this.emit('changed', { old, new: this.#value });
         }
     }
 
     default(v)
     {
-        this[value] = this.__set(this[setter].apply(this, [ v ]));
+        this.#value = this.__set(this.#setter.apply(this, [ v ]));
 
         return this;
     }
@@ -90,43 +85,12 @@ export default class Type extends EventTarget
 
     get __value()
     {
-        return this[value];
-    }
-
-    set __value(v)
-    {
-        this.setValue(v);
-
-        if(v instanceof Promise)
-        {
-            v.then(v => this.__value = v);
-
-            return;
-        }
-
-        const old = this[value];
-
-        this[value] = this.__set(this[setter].apply(this, [ v ]));
-
-        // if(this.constructor.name === 'List')
-        // {
-        //     console.log(old, this[value], equals(old, this[value]));
-        // }
-
-        if(equals(old, this[value]) === false)
-        {
-            this.emit('changed', { old, new: this[value] });
-        }
-    }
-
-    get renders()
-    {
-        return this[renderers];
+        return this.#value;
     }
 
     set name(n)
     {
-        this[name] = n;
+        this.#name = n;
     }
 
     static get view()

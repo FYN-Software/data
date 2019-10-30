@@ -1,22 +1,26 @@
-const _database = Symbol('database');
-const _table = Symbol('table');
+import Schema from './schema.js';
 
-export default class Table
+export default class Table extends Schema
 {
+    #database;
+    #table;
+
     constructor(database = '', table = '')
     {
-        this[_database] = database;
-        this[_table] = table;
+        super();
+
+        this.#database = database;
+        this.#table = table;
     }
 
     get database()
     {
-        return this[_database];
+        return this.#database;
     }
 
     get table()
     {
-        return this[_table];
+        return this.#table;
     }
 
     static get Types()

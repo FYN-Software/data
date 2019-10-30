@@ -1,16 +1,14 @@
 import Type from './type.js';
 
-const min = Symbol('min');
-const max = Symbol('max');
-
 export default class extends Type
 {
+    #min = -Infinity;
+    #max = Infinity;
+
     constructor()
     {
         super();
 
-        this[min] = -Infinity;
-        this[max] = Infinity;
         this.default(0);
     }
 
@@ -18,10 +16,12 @@ export default class extends Type
     {
         if(Number.isNaN(v) === true)
         {
+            console.trace(v);
+
             throw new Error(`Given value is NaN`);
         }
 
-        return Math.clamp(this[min], this[max], v);
+        return Math.clamp(this.#min, this.#max, v);
     }
 
     min(i)
@@ -31,7 +31,7 @@ export default class extends Type
             throw new Error(`Expected an integer, got '${i}'`);
         }
 
-        this[min] = i;
+        this.#min = i;
 
         return this;
     }
@@ -43,7 +43,7 @@ export default class extends Type
             throw new Error(`Expected an integer, got '${i}'`);
         }
 
-        this[max] = i;
+        this.#max = i;
 
         return this;
     }
