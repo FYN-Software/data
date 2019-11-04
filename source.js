@@ -32,9 +32,13 @@ export default class Source
 
     async *fetch(query, args)
     {
-        for await (const r of this.#connection.fetch(this.#schema.prepare(query)))
-        {
-            yield this.#adapter.from(r);
-        }
+        const inner = async function* (self){
+            for await (const r of self.#connection.fetch(self.#schema.prepare(query)))
+            {
+                yield* self.#adapter.from(r);
+            }
+        };
+
+        yield* this.#schema.map(inner(this));
     }
 }

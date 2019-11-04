@@ -10,6 +10,11 @@ export default class Schema
         throw new Error(`Not implemented`);
     }
 
+    async *map(data)
+    {
+        yield* data;
+    }
+
     static get default()
     {
         return class extends this

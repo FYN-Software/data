@@ -8,6 +8,7 @@ import SchemaBase from './schema/schema.js';
 import Table from './schema/table.js';
 import Po from './schema/po.js';
 import Rest from './schema/rest.js';
+import Bitbucket from './schema/bitbucket.js';
 
 import ConnectionBase from './connection/connection.js';
 import Database from './connection/database.js';
@@ -25,6 +26,7 @@ const Schema = {
     Table,
     Po,
     Rest,
+    Bitbucket,
 };
 
 const Connection = {

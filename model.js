@@ -44,7 +44,7 @@ export default class Model extends ObjectType
             }
 
             Object.defineProperty(this, k, {
-                get: () => this.#fields[k],
+                get: () => this.#fields[k].__value,
                 set: this.#fields[k].setValue.bind(this.#fields[k]),
             })
         }
@@ -59,7 +59,7 @@ export default class Model extends ObjectType
     {
         const inst = new this;
 
-        for(let [k, v] of Object.entries(data))
+        for(const [k, v] of Object.entries(data))
         {
             if(inst.#fields.hasOwnProperty(k) === false)
             {
@@ -104,8 +104,6 @@ export default class Model extends ObjectType
 
         for await (const r of this.fetch(query, args))
         {
-            console.log(r);
-
             yield this.constructor.fromData(r);
         }
     }
@@ -151,7 +149,7 @@ export default class Model extends ObjectType
         {
             #name;
             #type;
-            #operation;
+            #operator;
             #value;
 
             constructor(name, type)
@@ -162,7 +160,7 @@ export default class Model extends ObjectType
 
             isEqualTo(value)
             {
-                this.#operation = '=';
+                this.#operator = '=';
                 this.#value = value;
 
                 return this;
@@ -170,7 +168,7 @@ export default class Model extends ObjectType
 
             isNotEqualTo(value)
             {
-                this.#operation = '!=';
+                this.#operator = '!=';
                 this.#value = value;
 
                 return this;
@@ -178,7 +176,7 @@ export default class Model extends ObjectType
 
             isGreaterThan(value)
             {
-                this.#operation = '>';
+                this.#operator = '>';
                 this.#value = value;
 
                 return this;
@@ -186,7 +184,7 @@ export default class Model extends ObjectType
 
             isGreaterThanOrEqualTo(value)
             {
-                this.#operation = '>=';
+                this.#operator = '>=';
                 this.#value = value;
 
                 return this;
@@ -194,7 +192,7 @@ export default class Model extends ObjectType
 
             isLessThan(value)
             {
-                this.#operation = '<';
+                this.#operator = '<';
                 this.#value = value;
 
                 return this;
@@ -202,10 +200,30 @@ export default class Model extends ObjectType
 
             isLessThanOrEqualTo(value)
             {
-                this.#operation = '<=';
+                this.#operator = '<=';
                 this.#value = value;
 
                 return this;
+            }
+
+            get name()
+            {
+                return this.#name;
+            }
+
+            get type()
+            {
+                return this.#type;
+            }
+
+            get operator()
+            {
+                return this.#operator;
+            }
+
+            get value()
+            {
+                return this.#value;
             }
         };
 
