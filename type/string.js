@@ -2,53 +2,39 @@ import Type from './type.js';
 
 export default class extends Type
 {
-    #min = -Infinity;
-    #max = Infinity;
-
-    constructor()
+    constructor(value)
     {
-        super();
+        super({ value: value || '', min: 0, max: Infinity });
+    }
 
-        this.default('');
+    get [Symbol.toStringTag]()
+    {
+        return `${super[Symbol.toStringTag]}.String`;
     }
 
     __set(v)
     {
-        return String(v);
-    }
-
-    min(i)
-    {
-        if(Number.isInteger(i) === false || i < 0)
-        {
-            throw new Error(`Expected an unsigned integer, got '${i}'`);
-        }
-
-        this.#min = i;
-
-        return this;
-    }
-
-    max(i)
-    {
-        if(Number.isInteger(i) === false || i < 0)
-        {
-            throw new Error(`Expected an unsigned integer, got '${i}'`);
-        }
-
-        this.#max = i;
-
-        return this;
+        return String(v).padEnd(this.min, ' ').substr(0, this.max);
     }
 
     static min(i)
     {
-        return new this.min(i);
+        if(Number.isInteger(i) === false)
+        {
+            throw new Error(`Expected an integer, got '${i}'`);
+        }
+
+        return this._configure('min', i);
     }
 
     static max(i)
     {
-        return new this.max(i);
+        if(Number.isInteger(i) === false)
+        {
+            throw new Error(`Expected an integer, got '${i}'`);
+        }
+
+        return this._configure('max', i);
     }
 
     static [Symbol.hasInstance](v)

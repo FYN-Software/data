@@ -2,8 +2,8 @@ import Type from './type.js';
 
 export default class extends Type
 {
-    static get view()
+    constructor(value)
     {
-        return import('../../suite/js/common/form/datetime.js').then(m => m.default);
+        super({ value: value || Date.now()});
     }
 }

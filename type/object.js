@@ -6,63 +6,32 @@ export default class extends Type
 {
     constructor()
     {
-        super();
-
-        this.default({});
+        super({ value: {}, template: {} });
     }
 
-    static define(p)
+    __set(v)
     {
-        const normalize = (node) => {
-            for(const k of Object.getOwnPropertyNames(node))
-            {
-                if((node[k] instanceof Type) === false && (node[k].prototype instanceof Type) === true)
-                {
-                    node[k] = new node[k]();
-                }
-                else if(typeof p[k] === 'object')
-                {
-                    normalize(p[k]);
-                }
+        console.log(this.template);
+
+        return new Proxy(v, {
+            get: (target, property) => {
+                // console.log(property);
+
+                return target[property];
+            },
+            set: (target, property, value, receiver) => {
+                // console.log(arguments);
+
+                target[property] = value;
+
+                return true;
             }
-        };
+        });
+    }
 
-        p = Object.freeze(normalize(p));
-
-        return class extends this
-        {
-            constructor()
-            {
-                super();
-
-                for(const [ k, p ] of Object.entries({ ...this.constructor[structure] }))
-                {
-                    if((p instanceof Type) === false && (p.prototype instanceof Type) === true)
-                    {
-                        this.constructor[structure][k] = new p();
-                    }
-
-                    try
-                    {
-                        p.on({ changed: () => this.emit('changed') });
-                    }
-                    catch {}
-
-                    Object.defineProperty(this, k, {
-                        get: () => p.__value,
-                        set: p.setValue.bind(p),
-                        enumerable: true,
-                    });
-                }
-
-                this.setValue(this);
-            }
-
-            static get [structure]()
-            {
-                return { ...p };
-            }
-        };
+    static define(template)
+    {
+        return this._configure('template', template);
     }
 
     static [Symbol.hasInstance](v)

@@ -1,52 +1,40 @@
-import { equals } from '../../core/extends.js';
-
-const value = Symbol('value');
+import { equals, clone } from '../../core/extends.js';
 
 export default class Type extends EventTarget
 {
-    #setter = v => v;
-    #name = '';
-    #value = null;
+    static config = { };
 
-    constructor()
+    #name = '';
+
+    constructor(defaults = {})
     {
         super();
+
+        const config = { ...{ setter: v => v, value: null }, ...defaults, ...this.constructor.config };
+
+        for(const name of [ ...Object.keys(config).filter(n => n !== 'value'), 'value' ])
+        {
+            const value = name === 'value'
+                ? this.__set(this.setter(config[name]))
+                : config[name];
+
+            Object.defineProperty(this, name, {
+                value,
+                writable: true,
+                enumerable: true,
+                configurable: false,
+            });
+        }
     }
 
     [Symbol.toPrimitive](hint)
     {
-        return this[value];
+        return this.value;
     }
 
-    [Symbol.toStringTag]()
+    get [Symbol.toStringTag]()
     {
-        return this.constructor.name;
-    }
-
-    async toComponent()
-    {
-        const component = new (await this.constructor.view);
-        component.name = this.#name;
-        component.label = this.#name.capitalize();
-
-        return component;
-    }
-
-    set(cb)
-    {
-        if(typeof cb !== 'function')
-        {
-            throw new Error(`Expected a callable, got '${cb}'`);
-        }
-
-        this.#setter = cb;
-
-        return this;
-    }
-
-    static set(cb)
-    {
-        return (new this).set(cb);
+        return 'Type';
     }
 
     __set(v)
@@ -61,31 +49,29 @@ export default class Type extends EventTarget
             v = await v;
         }
 
-        const old = this.#value;
+        const old = this.value;
 
-        this.#value = this.__set(this.#setter.apply(this, [ v ]));
+        this.value = this.__set(this.setter.apply(this, [ v ]));
 
-        if(equals(old, this.#value) === false)
+        if(equals(old, this.value) === false)
         {
-            this.emit('changed', { old, new: this.#value });
+            this.emit('changed', { old, new: this.value });
         }
     }
 
-    default(v)
+    static set(cb)
     {
-        this.#value = this.__set(this.#setter.apply(this, [ v ]));
+        if(typeof cb !== 'function')
+        {
+            throw new Error(`Expected a callable, got '${cb}'`);
+        }
 
-        return this;
+        return this._configure('setter', cb);
     }
 
-    static default(...args)
+    static default(value)
     {
-        return new this().default(...args);
-    }
-
-    get __value()
-    {
-        return this.#value;
+        return this._configure('value', value);
     }
 
     set name(n)
@@ -93,8 +79,17 @@ export default class Type extends EventTarget
         this.#name = n;
     }
 
-    static get view()
+    static _configure(name, value)
     {
-        return import('../../suite/js/common/form/input.js').then(m => m.default);
+        const owner = this;
+        const self = this.hasOwnProperty('__configurator__')
+            ? this
+            : class extends owner {
+                static config = clone(owner.config);
+            };
+
+        self.config[name] = value;
+
+        return self;
     }
 }

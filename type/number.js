@@ -2,60 +2,39 @@ import Type from './type.js';
 
 export default class extends Type
 {
-    #min = -Infinity;
-    #max = Infinity;
-
-    constructor()
+    constructor(value)
     {
-        super();
-
-        this.default(0);
+        super({ value: value || 0, min: -Infinity, max: Infinity });
     }
 
     __set(v)
     {
         if(Number.isNaN(v) === true)
         {
-            console.trace(v);
-
             throw new Error(`Given value is NaN`);
         }
 
-        return Math.clamp(this.#min, this.#max, v);
-    }
-
-    min(i)
-    {
-        if(Number.isInteger(i) === false)
-        {
-            throw new Error(`Expected an integer, got '${i}'`);
-        }
-
-        this.#min = i;
-
-        return this;
-    }
-
-    max(i)
-    {
-        if(Number.isInteger(i) === false)
-        {
-            throw new Error(`Expected an integer, got '${i}'`);
-        }
-
-        this.#max = i;
-
-        return this;
+        return Math.clamp(this.min, this.max, v);
     }
 
     static min(i)
     {
-        return (new this).min(i);
+        if(Number.isInteger(i) === false)
+        {
+            throw new Error(`Expected an integer, got '${i}'`);
+        }
+
+        return this._configure('min', i);
     }
 
     static max(i)
     {
-        return (new this).max(i);
+        if(Number.isInteger(i) === false)
+        {
+            throw new Error(`Expected an integer, got '${i}'`);
+        }
+
+        return this._configure('max', i);
     }
 
     static [Symbol.hasInstance](v)
