@@ -1,4 +1,5 @@
 import Model from './model.js';
+import Source from './source.js';
 
 import AdapterBase from './adapter/adapter.js';
 import Json from './adapter/json.js';
@@ -39,6 +40,7 @@ const Connection = {
 
 export {
     Model,
+    Source,
     Connection,
     Adapter,
     Schema,

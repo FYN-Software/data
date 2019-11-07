@@ -17,3 +17,15 @@ export {
     Datetime,
     Object,
 }
+export class Any extends Type
+{
+    constructor(value)
+    {
+        super({ value: value || null });
+    }
+
+    static [Symbol.hasInstance]()
+    {
+        return true;
+    }
+}

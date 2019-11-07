@@ -3,9 +3,11 @@ import Type from './type.js';
 
 export default class List extends Type
 {
-    constructor()
+    #queue = [];
+
+    constructor(value)
     {
-        super({ value: [], type: Type });
+        super({ value: value || [], type: Type });
     }
 
     __set(v)
@@ -34,12 +36,21 @@ export default class List extends Type
                         return target[property];
                 }
             },
-            // set: (target, property, value, receiver) => {
-            //     target[property] = value;
-            //
-            //     return true;
-            // }
         });
+    }
+
+    filter(callback)
+    {
+        this.#queue.push([ 'filter', callback ]);
+
+        return this;
+    }
+
+    map(callback)
+    {
+        this.#queue.push([ 'map', callback ]);
+
+        return this;
     }
 
     typeCheck(target, method)
@@ -61,9 +72,39 @@ export default class List extends Type
 
     get [Symbol.iterator]()
     {
-        const value = this.value.map(i => i.value);
+        let value = this.value.map(i => i.value);
 
         return value[Symbol.iterator].bind(value);
+    }
+
+    async *[Symbol.asyncIterator]()
+    {
+        outer:
+        for(let item of this.value.map(i => i.value))
+        {
+            for(const [method, callback] of this.#queue)
+            {
+                switch (method)
+                {
+                    case 'filter':
+                        if(Boolean(await callback(item)) === false)
+                        {
+                            continue outer;
+                        }
+
+                        break;
+
+                    case 'map':
+                        item = await callback(item);
+
+                        break;
+                }
+            }
+
+            yield item;
+        }
+
+        this.#queue = [];
     }
 
     static type(t)

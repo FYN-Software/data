@@ -1,8 +1,4 @@
 import Query from './query/query.js';
-import HasMany from './relation/hasMany.js';
-import HasOne from './relation/hasOne.js';
-import OwnsMany from './relation/ownsMany.js';
-import Relation from './relation/relation.js';
 import Type from './type/type.js';
 import ObjectType from './type/object.js';
 
@@ -14,40 +10,35 @@ export default class Model extends ObjectType
     }
 
     #sources = new Map();
-    #fields = {};
+    // #fields = {};
     #query = new Query(this);
     #raw = false;
 
     constructor(sources)
     {
-        super();
+        super({ template: new.target.properties });
 
         this.#sources = new Map(Object.entries(sources));
 
-        for(let [k, v] of Object.entries(this.constructor.properties))
-        {
-            if((v instanceof Type) === false && v.prototype instanceof Type)
-            {
-                v = new v;
-            }
-
-            if((v instanceof Type) === false)
-            {
-                throw new Error(`Model properties are expected to be typed, got '${v}'`);
-            }
-
-            this.#fields[k] = v;
-
-            if(v instanceof Relation)
-            {
-                v.owner = this;
-            }
-
-            Object.defineProperty(this, k, {
-                get: () => this.#fields[k].__value,
-                set: this.#fields[k].setValue.bind(this.#fields[k]),
-            })
-        }
+        // for(let [k, v] of Object.entries(this.constructor.properties))
+        // {
+        //     if((v instanceof Type) === false && v.prototype instanceof Type)
+        //     {
+        //         v = new v;
+        //     }
+        //
+        //     if((v instanceof Type) === false)
+        //     {
+        //         throw new Error(`Model properties are expected to be typed, got '${v}'`);
+        //     }
+        //
+        //     this.#fields[k] = v;
+        //
+        //     Object.defineProperty(this, k, {
+        //         get: () => this.#fields[k].value,
+        //         set: this.#fields[k].setValue.bind(this.#fields[k]),
+        //     })
+        // }
     }
 
     async *fetch(query, args)
@@ -61,7 +52,7 @@ export default class Model extends ObjectType
 
         for(const [k, v] of Object.entries(data))
         {
-            if(inst.#fields.hasOwnProperty(k) === false)
+            if(inst.hasOwnProperty(k) === false)
             {
                 continue;
             }
@@ -106,11 +97,6 @@ export default class Model extends ObjectType
         {
             yield this.constructor.fromData(r);
         }
-    }
-
-    resolveName(name)
-    {
-        return this.#fields[name];
     }
 
     static where(...args)

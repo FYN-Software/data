@@ -25,6 +25,13 @@ export default class Type extends EventTarget
                 configurable: false,
             });
         }
+
+        // this.on({
+        //     options: {
+        //         details: true,
+        //     },
+        //     changed: ({ new: n }) => console.log(n),
+        // });
     }
 
     [Symbol.toPrimitive](hint)
