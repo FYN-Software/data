@@ -99,4 +99,22 @@ export default class Type extends EventTarget
 
         return self;
     }
+
+    static get Any()
+    {
+        return Any;
+    }
+}
+
+export class Any extends Type
+{
+    constructor(value)
+    {
+        super({ value: value || null });
+    }
+
+    static [Symbol.hasInstance]()
+    {
+        return true;
+    }
 }

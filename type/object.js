@@ -19,53 +19,56 @@ export default class extends Type
 
             if((v instanceof Type) === false)
             {
-                throw new Error(`Properties are expected to be typed, got '${v}'`);
+                throw new Error(`Properties are expected to be typed, got '${v}' instead`);
             }
 
             this.#fields[k] = v;
 
-            Object.defineProperty(this, k, {
-                get: () => this.#fields[k].value,
-                set: this.#fields[k].setValue.bind(this.#fields[k]),
-            })
+            if(this.hasOwnProperty(k) === false)
+            {
+                Object.defineProperty(this, k, {
+                    get: () => this.#fields[k].value,
+                    set: this.#fields[k].setValue.bind(this.#fields[k]),
+                });
+            }
         }
     }
 
-    __set(v)
+    __set(value)
     {
-        if(v === null || v === undefined)
+        if(value === null || value === undefined)
         {
-            return v;
+            return value;
         }
 
-        if(typeof v !== 'object')
+        if(typeof value !== 'object')
         {
-            console.trace(v, this.template);
-
-            v = {};
+            value = {};
         }
 
-        return v;
+        const returnValue = value;
 
-        return new Proxy(v, {
-            get: (target, property) => {
-                // console.log(property);
+        for(const [ k, v ] of Object.entries(this.template))
+        {
+            const property = new v(value[k] || undefined);
 
-                if(typeof target[property] === 'function')
-                {
-                    return target[property].bind(target);
-                }
-
-                return target[property];
-            },
-            set: (target, property, value, receiver) => {
-                // console.log(arguments);
-
-                target[property] = value;
-
-                return true;
+            if((property instanceof v) === false)
+            {
+                throw new Error(`Type mismatch, expected instance of '${v.name}', got '${value[k]}' instead`);
             }
-        });
+
+            if(returnValue.hasOwnProperty(k) === false)
+            {
+                Object.defineProperty(returnValue, k, {
+                    get: () => property.value,
+                    set: v => property.setValue(v),
+                    configurable: false,
+                    enumerable: true,
+                });
+            }
+        }
+
+        return returnValue;
     }
 
     static define(template)

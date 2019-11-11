@@ -1,4 +1,4 @@
-import Type from './type/type.js';
+import Type, { Any } from './type/type.js';
 import String from './type/string.js';
 import List from './type/list.js';
 import Enum from './type/enum.js';
@@ -16,16 +16,5 @@ export {
     Number,
     Datetime,
     Object,
-}
-export class Any extends Type
-{
-    constructor(value)
-    {
-        super({ value: value || null });
-    }
-
-    static [Symbol.hasInstance]()
-    {
-        return true;
-    }
+    Any,
 }

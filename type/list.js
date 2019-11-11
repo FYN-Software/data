@@ -7,7 +7,7 @@ export default class List extends Type
 
     constructor(value)
     {
-        super({ value: value || [], type: Type });
+        super({ value: value || [], type: Type.Any });
     }
 
     __set(v)
@@ -67,7 +67,12 @@ export default class List extends Type
 
     normalize(items)
     {
-        return items.map(i => i[Symbol.toStringTag] !== undefined ? i : new this.type(i));
+        return items.map(i => i && i[Symbol.toStringTag] !== undefined ? i : new this.type(i));
+    }
+
+    static [Symbol.hasInstance](v)
+    {
+        return Array.isArray(v) || v.constructor === this;
     }
 
     get [Symbol.iterator]()
