@@ -6,7 +6,7 @@ export default class Type extends EventTarget
 
     #name = '';
 
-    constructor(defaults = {})
+    constructor(defaults = {}, value = undefined)
     {
         super();
 
@@ -24,6 +24,11 @@ export default class Type extends EventTarget
                 enumerable: true,
                 configurable: false,
             });
+        }
+
+        if(value !== undefined)
+        {
+            this.value = value;
         }
 
         // this.on({

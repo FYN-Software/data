@@ -7,7 +7,7 @@ export default class List extends Type
 
     constructor(value)
     {
-        super({ value: value || [], type: Type.Any });
+        super({ value: [], type: Type.Any }, value);
     }
 
     __set(v)
@@ -22,12 +22,36 @@ export default class List extends Type
             throw new Error(`Not all items are of type '${this.type.name}'`);
         }
 
-        return new Proxy(this.normalize(v), {
+        v = this.normalize(v);
+
+        for(const type of v)
+        {
+            type.on({
+                changed: d => this.emit('changed', d),
+            })
+        }
+
+        return new Proxy(v, {
             get: (target, property) => {
+                if(Number.isInteger(Number.parseInt(property)) && target[property] instanceof Type)
+                {
+                    return target[property] && target[property].value;
+                }
+
                 switch (property)
                 {
                     case Symbol.iterator:
-                        return this[Symbol.iterator];
+                        return target[property].bind(target);
+
+                    case 'groupBy':
+                        return k => this.value.reduce(
+                            (t, i) => {
+                                (t[i[k]] = t[i[k]] || []).push(i);
+
+                                return t;
+                            },
+                            {}
+                        );
 
                     case 'push':
                         return this.typeCheck(target, property);
@@ -37,6 +61,11 @@ export default class List extends Type
                 }
             },
         });
+    }
+
+    get [Symbol.toStringTag]()
+    {
+        return `${super[Symbol.toStringTag]}.List`;
     }
 
     filter(callback)
@@ -77,9 +106,7 @@ export default class List extends Type
 
     get [Symbol.iterator]()
     {
-        let value = this.value.map(i => i.value);
-
-        return value[Symbol.iterator].bind(value);
+        return this.value[property].bind(this.value);
     }
 
     async *[Symbol.asyncIterator]()

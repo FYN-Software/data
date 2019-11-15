@@ -4,7 +4,7 @@ export default class extends Type
 {
     constructor(value)
     {
-        super({ value: value || '', min: 0, max: Infinity });
+        super({ value: '', min: 0, max: Infinity }, value);
     }
 
     get [Symbol.toStringTag]()

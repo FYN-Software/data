@@ -8,7 +8,7 @@ export default class Enum extends Type
 {
     constructor(value)
     {
-        super({ value: value || null, template: null });
+        super({ value: null, template: null, enum: true }, value);
     }
 
     __set(v)
@@ -26,6 +26,11 @@ export default class Enum extends Type
         }
 
         return v;
+    }
+
+    get [Symbol.toStringTag]()
+    {
+        return `${super[Symbol.toStringTag]}.Enum`;
     }
 
     static [Symbol.hasInstance](v)

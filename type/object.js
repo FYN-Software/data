@@ -4,31 +4,22 @@ const structure = Symbol('structure');
 
 export default class extends Type
 {
-    #fields = {};
-
-    constructor(conf = {})
+    constructor(value)
     {
-        super({ ...{ value: {}, template: {} }, ...conf });
+        super({ value: {}, template: {} }, value);
 
         for(let [k, v] of Object.entries(this.template))
         {
-            if((v instanceof Type) === false && v.prototype instanceof Type)
-            {
-                v = new v;
-            }
-
-            if((v instanceof Type) === false)
+            if((v instanceof Type) === false && (v.prototype instanceof Type) === false)
             {
                 throw new Error(`Properties are expected to be typed, got '${v}' instead`);
             }
 
-            this.#fields[k] = v;
-
             if(this.hasOwnProperty(k) === false)
             {
                 Object.defineProperty(this, k, {
-                    get: () => this.#fields[k].value,
-                    set: this.#fields[k].setValue.bind(this.#fields[k]),
+                    get: () => this.value[k],
+                    set: v => this.value[k] = v,
                 });
             }
         }
@@ -57,18 +48,36 @@ export default class extends Type
                 throw new Error(`Type mismatch, expected instance of '${v.name}', got '${value[k]}' instead`);
             }
 
-            if(returnValue.hasOwnProperty(k) === false)
+            if(returnValue.hasOwnProperty(k) === true)
             {
-                Object.defineProperty(returnValue, k, {
-                    get: () => property.value,
-                    set: v => property.setValue(v),
-                    configurable: false,
-                    enumerable: true,
-                });
+                if(Object.getOwnPropertyDescriptor(returnValue, k).configurable === false)
+                {
+                    returnValue[k] = value[k];
+
+                    continue;
+                }
+
+                delete returnValue[k];
             }
+
+            property.on({
+                changed: d => this.emit('changed', d),
+            });
+
+            Object.defineProperty(returnValue, k, {
+                get: () => property.value,
+                set: v => property.setValue(v),
+                configurable: false,
+                enumerable: true,
+            });
         }
 
         return returnValue;
+    }
+
+    get [Symbol.toStringTag]()
+    {
+        return `${super[Symbol.toStringTag]}.Object`;
     }
 
     static define(template)

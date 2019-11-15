@@ -4,7 +4,7 @@ export default class extends Type
 {
     constructor(value)
     {
-        super({ value: value || 0, min: -Infinity, max: Infinity });
+        super({ value: 0, min: -Infinity, max: Infinity }, value);
     }
 
     __set(v)
