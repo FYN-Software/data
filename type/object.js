@@ -60,6 +60,8 @@ export default class extends Type
                 delete returnValue[k];
             }
 
+            property._owner = this;
+            property._name = k;
             property.on({
                 changed: d => this.emit('changed', d),
             });
@@ -70,6 +72,16 @@ export default class extends Type
                 configurable: false,
                 enumerable: true,
             });
+        }
+
+        for(const [ name, descriptor ] of Object.entries(Object.getOwnPropertyDescriptors(this.template)))
+        {
+            if(descriptor.get === undefined)
+            {
+                continue;
+            }
+
+            Object.defineProperty(returnValue, name, descriptor);
         }
 
         return returnValue;

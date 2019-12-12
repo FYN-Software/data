@@ -1,42 +1,40 @@
+import base from '../../component/base.js';
 import { equals, clone } from '../../core/extends.js';
+
+const baseConfig = { getter: v => v, setter: v => v, value: null };
 
 export default class Type extends EventTarget
 {
     static config = { };
 
     #name = '';
+    #owner = null;
+    #value = null;
 
     constructor(defaults = {}, value = undefined)
     {
         super();
 
-        const config = { ...{ setter: v => v, value: null }, ...defaults, ...this.constructor.config };
+        const config = { ...baseConfig, ...defaults, ...this.constructor.config };
 
-        for(const name of [ ...Object.keys(config).filter(n => n !== 'value'), 'value' ])
+        for(const name of Object.keys(config).filter(n => n !== 'value'))
         {
-            const value = name === 'value'
-                ? this.__set(this.setter(config[name]))
-                : config[name];
-
             Object.defineProperty(this, name, {
-                value,
+                value: config[name],
                 writable: true,
                 enumerable: true,
                 configurable: false,
             });
         }
 
-        if(value !== undefined)
-        {
-            this.value = value;
-        }
+        Object.defineProperty(this, 'value', {
+            get: () => this.__get(this.getter.apply(this, [ this.#value ])),
+            set: v => this.#value = this.__set(this.setter.apply(this, [ v ])),
+            enumerable: true,
+            configurable: false,
+        });
 
-        // this.on({
-        //     options: {
-        //         details: true,
-        //     },
-        //     changed: ({ new: n }) => console.log(n),
-        // });
+        this.value = value || config['value'];
     }
 
     [Symbol.toPrimitive](hint)
@@ -49,6 +47,10 @@ export default class Type extends EventTarget
         return 'Type';
     }
 
+    __get(v)
+    {
+        return v;
+    }
     __set(v)
     {
         return v;
@@ -56,19 +58,16 @@ export default class Type extends EventTarget
 
     async setValue(v)
     {
-        if(v instanceof Promise)
-        {
-            v = await v;
-        }
+        const old = this.#value;
 
-        const old = this.value;
+        this.value = await v;
 
-        this.value = this.__set(this.setter.apply(this, [ v ]));
-
-        if(equals(old, this.value) === false)
+        if(equals(old, this.#value) === false)
         {
             this.emit('changed', { old, new: this.value });
         }
+
+        return v;
     }
 
     static set(cb)
@@ -86,9 +85,19 @@ export default class Type extends EventTarget
         return this._configure('value', value);
     }
 
-    set name(n)
+    set _name(n)
     {
         this.#name = n;
+    }
+
+    get _owner()
+    {
+        return this.#owner;
+    }
+
+    set _owner(o)
+    {
+        this.#owner = o;
     }
 
     static _configure(name, value)
@@ -97,6 +106,7 @@ export default class Type extends EventTarget
         const self = this.hasOwnProperty('__configurator__')
             ? this
             : class extends owner {
+                static __configurator__;
                 static config = clone(owner.config);
             };
 
@@ -115,7 +125,7 @@ export class Any extends Type
 {
     constructor(value)
     {
-        super({ value: value || null });
+        super({ value: null }, value);
     }
 
     static [Symbol.hasInstance]()

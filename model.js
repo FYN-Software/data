@@ -1,6 +1,10 @@
 import Query from './query/query.js';
 import Type from './type/type.js';
 import ObjectType from './type/object.js';
+import HasMany from './relation/hasMany.js';
+import HasOne from './relation/hasOne.js';
+import OwnsMany from './relation/ownsMany.js';
+import OwnsOne from './relation/ownsOne.js';
 
 export default class Model extends ObjectType
 {
@@ -8,59 +12,26 @@ export default class Model extends ObjectType
     {
         return {};
     }
+    static get sources()
+    {
+        throw new Error(`Not implemented`);
+    }
 
     #sources = new Map();
-    // #fields = {};
     #query = new Query(this);
+    #source = 'default';
     #raw = false;
 
-    constructor(sources)
+    constructor(value)
     {
-        super({ template: new.target.properties });
+        super(value);
 
-        this.#sources = new Map(Object.entries(sources));
-
-        // for(let [k, v] of Object.entries(this.constructor.properties))
-        // {
-        //     if((v instanceof Type) === false && v.prototype instanceof Type)
-        //     {
-        //         v = new v;
-        //     }
-        //
-        //     if((v instanceof Type) === false)
-        //     {
-        //         throw new Error(`Model properties are expected to be typed, got '${v}'`);
-        //     }
-        //
-        //     this.#fields[k] = v;
-        //
-        //     Object.defineProperty(this, k, {
-        //         get: () => this.#fields[k].value,
-        //         set: this.#fields[k].setValue.bind(this.#fields[k]),
-        //     })
-        // }
+        this.#sources = new Map(Object.entries(this.constructor.sources));
     }
 
     async *fetch(query, args)
     {
-        yield* this.#sources.get('default').fetch(query, args);
-    }
-
-    static fromData(data)
-    {
-        const inst = new this;
-
-        for(const [k, v] of Object.entries(data))
-        {
-            if(inst.hasOwnProperty(k) === false)
-            {
-                continue;
-            }
-
-            inst[k] = v;
-        }
-
-        return inst;
+        yield* this.#sources.get(this.#source).fetch(query, args);
     }
 
     save()
@@ -82,7 +53,7 @@ export default class Model extends ObjectType
 
         return v === undefined
             ? null
-            : this.constructor.fromData(v);
+            : new this.constructor(v);
     }
     async *findAll(query, args = {})
     {
@@ -95,7 +66,7 @@ export default class Model extends ObjectType
 
         for await (const r of this.fetch(query, args))
         {
-            yield this.constructor.fromData(r);
+            yield (new this.constructor(r));
         }
     }
 
@@ -117,11 +88,38 @@ export default class Model extends ObjectType
     }
     static async find(...args)
     {
-        return new this.find(...args);
+        return new Query(new this).find(...args);
     }
     static async *findAll(...args)
     {
-        yield* new this.findAll(...args);
+        yield* (new Query(new this).findAll(...args));
+    }
+
+    static hasMany(target)
+    {
+        return HasMany.ownedBy(this).targets(target);
+    }
+    static ownsMany(target)
+    {
+        return OwnsMany.ownedBy(this).targets(target);
+    }
+    static hasOne(target)
+    {
+        return HasOne.ownedBy(this).targets(target);
+    }
+    static ownsOne(target)
+    {
+        return OwnsOne.ownedBy(this).targets(target);
+    }
+
+    static withSources(sources)
+    {
+        if(typeof sources !== 'object' || sources.hasOwnProperty('default') === false)
+        {
+            throw new Error(`Invalid source definition for '${this.name}', expected at least a source with 'default' as key`);
+        }
+
+        return this._configure('sources', sources);
     }
 
     static initialize(model)
@@ -142,6 +140,16 @@ export default class Model extends ObjectType
             {
                 this.#name = name;
                 this.#type = type;
+            }
+
+            [Symbol.toPrimitive](hint)
+            {
+                if(hint === 'string')
+                {
+                    return [ `$${this.#name}`, this.#operator, this.#value ].join(' ');
+                }
+
+                return this;
             }
 
             isEqualTo(value)
@@ -192,6 +200,20 @@ export default class Model extends ObjectType
                 return this;
             }
 
+            get asc()
+            {
+                this.#operator = 'ASC';
+
+                return this;
+            }
+
+            get desc()
+            {
+                this.#operator = 'DESC';
+
+                return this;
+            }
+
             get name()
             {
                 return this.#name;
@@ -221,5 +243,19 @@ export default class Model extends ObjectType
                 enumerable: true,
             });
         }
+
+        const properties = { ...model.properties };
+
+        for(const [ name, descriptor ] of Object.entries(Object.getOwnPropertyDescriptors(model.prototype)))
+        {
+            if (descriptor.get === undefined)
+            {
+                continue;
+            }
+
+            Object.defineProperty(properties, name, descriptor);
+        }
+
+        return model.withSources(model.sources).define(properties);
     }
 }

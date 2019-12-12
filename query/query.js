@@ -18,13 +18,18 @@ export default class Query
         }
     }
 
-    find(args = {})
+    get methods()
     {
-        return this.#target.find(this, args);
+        return this.#methods;
     }
-    findAll(args = {})
+
+    async find(args = {})
     {
-        return this.#target.findAll(this, args);
+        return this.limit(1).#target.find(this, args);
+    }
+    async *findAll(args = {})
+    {
+        yield* this.#target.findAll(this, args);
     }
 
     where(...args)

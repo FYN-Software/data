@@ -14,7 +14,18 @@ export default class List extends Type
     {
         if(Array.isArray(v) === false)
         {
-            throw new Error(`Expected an 'Array', got '${v.constructor.name}'`);
+            if(typeof v[Symbol.iterator] === 'function')
+            {
+                v = Array.from(v);
+            }
+            else if(typeof v[Symbol.asyncIterator] === 'function')
+            {
+                return Array.fromAsync(v).then(v => this.__set(v));
+            }
+            else
+            {
+                throw new Error(`Expected an 'Array', got '${v.constructor.name}'`);
+            }
         }
 
         if(this.type !== null && v.some(i => (i instanceof this.type) === false))
@@ -33,7 +44,7 @@ export default class List extends Type
 
         return new Proxy(v, {
             get: (target, property) => {
-                if(Number.isInteger(Number.parseInt(property)) && target[property] instanceof Type)
+                if (typeof property === 'string' && Number.isInteger(Number.parseInt(property)) && target[property] instanceof Type)
                 {
                     return target[property] && target[property].value;
                 }
@@ -42,6 +53,11 @@ export default class List extends Type
                 {
                     case Symbol.iterator:
                         return target[property].bind(target);
+
+                    case Symbol.asyncIterator:
+                        console.trace(property);
+
+                        return this[property].bind(this);
 
                     case 'groupBy':
                         return k => this.value.reduce(
@@ -54,7 +70,12 @@ export default class List extends Type
                         );
 
                     case 'push':
+                    case 'unshift':
                         return this.typeCheck(target, property);
+
+                    case 'first':
+                    case 'last':
+                        return target[property].value;
 
                     default:
                         return target[property];
@@ -96,6 +117,8 @@ export default class List extends Type
 
     normalize(items)
     {
+        // console.trace(this.type, items);
+
         return items.map(i => i && i[Symbol.toStringTag] !== undefined ? i : new this.type(i));
     }
 

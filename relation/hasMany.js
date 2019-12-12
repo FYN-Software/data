@@ -1,5 +1,10 @@
 export default class HasMany
 {
+    static get many()
+    {
+        return true;
+    }
+
     targets(t)
     {
         this._target = t;

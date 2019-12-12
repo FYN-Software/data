@@ -1,84 +1,71 @@
-export default class Relation
+import QueuedPromise from '../../core/queuedPromise.js';
+import Type from '../type/type.js';
+
+export default class Relation extends Type
 {
+    #fetched = false;
+
     static get many()
     {
         return true;
     }
 
-    constructor(owner, target)
+    constructor(value)
     {
-        this._owner = owner;
-        this._target = target;
-        this._value;
+        super({}, value);
     }
 
-    set owner(o)
+    __set(v)
     {
-        this._owner = o;
+        return v instanceof QueuedPromise
+            ? v
+            : new QueuedPromise(v instanceof Promise ? v : Promise.resolve(v));
     }
 
-    get value()
+    __get(v)
     {
-        if(this._value === undefined)
+        if(this.#fetched === false)
         {
-            let values = {};
-            let wheres = [];
-            let target = new this._target;
+            this.#fetched = true;
 
-            for(let [ local, foreign ] of Object.entries(this._bindings))
+            let query = this.target;
+            const args = {};
+
+            for(const [ local, foreign ] of Object.entries(this.bindings))
             {
-                values[local] = this._owner[local];
-                wheres.push(`\`${target.resolveName(foreign)}\` = @${local}`);
+                query = query.where(this.target[foreign].isEqualTo(`@${foreign}`));
+                args[foreign] = this._owner[local];
             }
 
-            this._value = this._target.where(...wheres)[this.constructor.many ? 'findAll' : 'find'](values);
+            const value = query[this.constructor.many ? 'findAll' : 'find'](args);
+
+            if(this.constructor.many)
+            {
+                v = this.value = Array.fromAsync(value);
+
+                this.setValue(v);
+            }
+            else
+            {
+                v = this.value = this.setValue(value);
+            }
         }
 
-        let queue = [];
-        let calls = [];
-        const resolve = (item, property) => {
-            let r = item[property];
-
-            if(typeof r === 'function')
-            {
-                r = r.apply(item, ...calls.shift());
-            }
-
-            return r;
-        };
-        const promise = this._value.then(r => queue.reduce(
-            (t, q) => t.then(r => Promise.resolve(r !== null && r !== undefined
-                ? resolve(r, q)
-                : undefined
-            )),
-            Promise.resolve(r)
-        ));
-
-        const proxy = new Proxy(() => {}, {
-            get: (c, p) => {
-                if((p in promise) === false)
-                {
-                    queue.push(p);
-
-                    return proxy;
-                }
-
-                return promise[p].bind(promise);
-            },
-            apply: (target, thisArg, args) => {
-                calls.push(args)
-
-                return proxy;
-            }
-        });
-
-        return proxy;
+        return new QueuedPromise(v instanceof Promise ? v : Promise.resolve(v));
     }
 
-    maps(conf)
+    static ownedBy(owner)
     {
-        this._bindings = conf;
+        return this._configure('ownedBy', owner);
+    }
 
-        return this;
+    static targets(target)
+    {
+        return this._configure('target', target);
+    }
+
+    static maps(conf)
+    {
+        return this._configure('bindings', conf);
     }
 }

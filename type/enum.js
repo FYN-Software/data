@@ -13,6 +13,11 @@ export default class Enum extends Type
 
     __set(v)
     {
+        if(v === null)
+        {
+            return v;
+        }
+
         if(typeof v === 'string' && this.constructor[values].has(v))
         {
             v = this.constructor[values].get(v);
@@ -35,7 +40,7 @@ export default class Enum extends Type
 
     static [Symbol.hasInstance](v)
     {
-        return (typeof v === 'symbol' && this[keys].has(v)) || v.constructor === this;
+        return (typeof v === 'symbol' && this[keys].has(v)) || v !== null && v.constructor === this;
     }
 
     static define(template)
@@ -66,66 +71,12 @@ export default class Enum extends Type
         }
 
         return self;
-
-        // p = Object.seal(Object.assign({}, p));
-        //
-        // const symbols = new Map();
-        // const names = new Map();
-        // const c = class extends this
-        // {
-        //     [Symbol.toPrimitive](hint)
-        //     {
-        //         switch (hint)
-        //         {
-        //             case 'string':
-        //                 return symbols.get(this.value);
-        //
-        //             default:
-        //                 return this;
-        //         }
-        //     }
-        //
-        //     static get [properties]()
-        //     {
-        //         return p;
-        //     }
-        //
-        //     static get [keys]()
-        //     {
-        //         return symbols;
-        //     }
-        //
-        //     static get [values]()
-        //     {
-        //         return names;
-        //     }
-        //
-        //     static *[Symbol.iterator]()
-        //     {
-        //         for(const [k, v] of Object.entries(p))
-        //         {
-        //             v.value = k;
-        //
-        //             yield v;
-        //         }
-        //     }
-        // };
-        //
-        // for(const k of Object.keys(Object.values(p)[0]))
-        // {
-        //     Object.defineProperty(c.prototype, k, {
-        //         get()
-        //         {
-        //             return this.constructor[properties][symbols.get(this.__value)][k];
-        //         },
-        //     });
-        // }
-        //
-        // return c;
     }
 
     static valueOf(k)
     {
+        // console.log(this.passed, k);
+
         return this[properties][this[keys].get(k)];
     }
 }

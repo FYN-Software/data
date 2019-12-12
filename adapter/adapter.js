@@ -3,7 +3,7 @@ export default class Adapter
     #from;
     #to;
 
-    constructor({ from, to } = { from: d => d, to: d => d })
+    constructor({ from, to } = { from: async function*(d){ yield d; }, to: async function*(d){ yield d; } })
     {
         this.#from = from;
         this.#to = to;
@@ -17,6 +17,11 @@ export default class Adapter
     async to(data)
     {
         return this.#to(data);
+    }
+
+    compile(query)
+    {
+        return query;
     }
 
     static get default()

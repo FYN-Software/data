@@ -14,7 +14,7 @@ export default class Bitbucket extends Schema
         this.#map = map;
     }
 
-    prepare(query)
+    prepare(query, args)
     {
         const parts = new Map();
 
@@ -23,7 +23,7 @@ export default class Bitbucket extends Schema
             switch (method)
             {
                 case 'where':
-                    parts.set('q', args.map(a => `${a.name}${a.operator}"${a.value}"`).join(' AND '));
+                    parts.set('q', args.map(a => `${a.name}${a.operator}${a.value}`).join(' AND '));
                     break;
 
                 case 'order':
@@ -40,7 +40,7 @@ export default class Bitbucket extends Schema
             }
         }
 
-        return `${this.#path}?${Array.from(parts, ([ method, args ]) => `${method}=${args}`).join('&')}`;
+        return `${this.#path}/${args.id}?${Array.from(parts, ([ method, args ]) => `${method}=${args}`).join('&')}`;
     }
 
     async *map(data)

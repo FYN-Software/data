@@ -4,6 +4,7 @@ import Source from './source.js';
 import AdapterBase from './adapter/adapter.js';
 import Json from './adapter/json.js';
 import Api from './adapter/api.js';
+import Sql from './adapter/sql.js';
 
 import SchemaBase from './schema/schema.js';
 import Table from './schema/table.js';
@@ -20,6 +21,7 @@ import File from './connection/file.js';
 const Adapter = {
     Adapter: AdapterBase,
     Json,
+    Sql,
 };
 
 const Schema = {

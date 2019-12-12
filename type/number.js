@@ -11,7 +11,7 @@ export default class extends Type
     {
         if(Number.isNaN(v) === true)
         {
-            throw new Error(`Given value is NaN`);
+            throw new Error(`Given value '${v}' is NaN`);
         }
 
         return Math.clamp(this.min, this.max, v);
