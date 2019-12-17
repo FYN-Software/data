@@ -13,10 +13,8 @@ import Rest from './schema/rest.js';
 import Bitbucket from './schema/bitbucket.js';
 
 import ConnectionBase from './connection/connection.js';
-import Database from './connection/database.js';
 import IndexedDB from './connection/indexedDB.js';
 import Http from './connection/http.js';
-import File from './connection/file.js';
 
 const Adapter = {
     Adapter: AdapterBase,
@@ -35,9 +33,7 @@ const Schema = {
 const Connection = {
     Connection: ConnectionBase,
     Http,
-    Database,
     IndexedDB,
-    File,
 };
 
 export {
