@@ -40,7 +40,7 @@ export default class Enum extends Type
 
     static [Symbol.hasInstance](v)
     {
-        return (typeof v === 'symbol' && this[keys].has(v)) || v !== null && v.constructor === this;
+        return (typeof v === 'symbol' && this[keys].has(v)) || (v !== null && v !== undefined && v.constructor === this);
     }
 
     static define(template)

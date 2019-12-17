@@ -35,11 +35,20 @@ export default class List extends Type
 
         v = this.normalize(v);
 
-        for(const type of v)
+        try
         {
-            type.on({
-                changed: d => this.emit('changed', d),
-            })
+            for(const type of v)
+            {
+                type.on({
+                    changed: d => this.emit('changed', d),
+                })
+            }
+        }
+        catch (e)
+        {
+            console.log(v, v.map(i => i[Symbol.toStringTag]));
+
+            throw e;
         }
 
         return new Proxy(v, {
@@ -117,9 +126,7 @@ export default class List extends Type
 
     normalize(items)
     {
-        // console.trace(this.type, items);
-
-        return items.map(i => i && i[Symbol.toStringTag] !== undefined ? i : new this.type(i));
+        return items.map(i => i && i[Symbol.toStringTag] !== undefined && i[Symbol.toStringTag].startsWith('Type') ? i : new this.type(i));
     }
 
     static [Symbol.hasInstance](v)
