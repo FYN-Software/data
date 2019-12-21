@@ -1,6 +1,7 @@
 import Type from './type.js';
 
 const properties = Symbol('properties');
+const indices = Symbol('indices');
 const keys = Symbol('keys');
 const values = Symbol('values');
 
@@ -57,13 +58,15 @@ export default class Enum extends Type
         };
         self.prototype[Symbol.iterator] = self[Symbol.iterator];
         self[properties] = template;
+        self[indices] = new Map();
         self[keys] = new Map();
         self[values] = new Map();
 
-        for(const k of Object.keys(template))
+        for(const [ i, k ] of Object.entries(Object.keys(template)))
         {
             const s = Symbol(k);
 
+            self[indices].set(s, Number.parseInt(i));
             self[keys].set(s, k);
             self[values].set(k, s);
 
@@ -71,6 +74,11 @@ export default class Enum extends Type
         }
 
         return self;
+    }
+
+    static indexOf(k)
+    {
+        return this[indices].get(k);
     }
 
     static valueOf(k)
