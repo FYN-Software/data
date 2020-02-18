@@ -7,7 +7,7 @@ export default class Schema
 
     prepare(query)
     {
-        throw new Error(`Not implemented`);
+        return query;
     }
 
     async *map(data)

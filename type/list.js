@@ -1,4 +1,3 @@
-import item from '../../suite/js/common/navigation/item.js';
 import Type from './type.js';
 
 export default class List extends Type

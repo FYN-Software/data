@@ -22,6 +22,7 @@ export default class Model extends ObjectType
     #source = 'default';
     #raw = false;
 
+
     constructor(value)
     {
         super(value);
@@ -29,14 +30,34 @@ export default class Model extends ObjectType
         this.#sources = new Map(Object.entries(this.constructor.sources));
     }
 
+    toTransferable()
+    {
+        return {
+            name: this.value.name,
+            start: this.value.start,
+            end: this.value.end,
+            link: this.value.link,
+            image: this.value.image,
+        };
+    }
+
     async *fetch(query, args)
     {
         yield* this.#sources.get(this.#source).fetch(query, args);
     }
 
-    save()
+    async save()
     {
-        throw new Error(`TODO: Implement method`);
+        try
+        {
+            await Array.fromAsync(this.fetch(new Query(this).insert(), {}));
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     async find(query, args = {})

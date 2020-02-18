@@ -28,15 +28,6 @@ export default class Adapter
     {
         return class extends this
         {
-            async from(data)
-            {
-                return data;
-            }
-
-            async to(data)
-            {
-                return data;
-            }
         }
     }
 }

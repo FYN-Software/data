@@ -18,6 +18,10 @@ export default class Query
         }
     }
 
+    get target()
+    {
+        return this.#target;
+    }
     get methods()
     {
         return this.#methods;
@@ -32,6 +36,12 @@ export default class Query
         yield* this.#target.findAll(this, args);
     }
 
+    insert(...args)
+    {
+        this.#methods.push([ 'insert', args ]);
+
+        return this;
+    }
     where(...args)
     {
         this.#methods.push([ 'where', args ]);

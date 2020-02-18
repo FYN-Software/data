@@ -5,43 +5,59 @@ const DB = Comlink.wrap(new Worker('/node_modules/@fyn-software/core/driver/idb.
 
 export default class IndexedDB extends Connection
 {
-    #name;
-    #stores;
-    #version;
-    #db = null;
+    #store;
 
-    constructor(name, stores, version)
+    constructor(store)
     {
         super();
 
-        this.#name = name;
-        this.#stores = stores;
-        this.#version = version;
+        this.#store = store;
     }
 
-    async open()
+    static async open()
     {
-        if(this.#db !== null)
+        throw new Error('Not implemented');
+    }
+
+    async *fetch(query, args)
+    {
+        if(query.methods.some(([ m ]) => m === 'insert'))
         {
-            return;
+            await (await this.constructor.open()).put(this.#store, query.target.toTransferable());
+
+            yield * [];
         }
-
-        this.#db = await new DB(this.#name);
-
-        await this.#db.open(this.#stores, this.#version);
+        else
+        {
+            yield* await (await this.constructor.open()).get(this.#store);
+        }
     }
 
-    async fetch(store, query)
+    async put(query, ...rows)
     {
-        await this.open();
-
-        return this.#db.get(store, query);
+        return (await this.constructor.open()).put(this.#store, ...rows);
     }
 
-    async put(store, ...rows)
+    static define(name, stores, version)
     {
-        await this.open();
+        return class extends IndexedDB
+        {
+            static #name = name;
+            static #stores = stores;
+            static #version = version;
+            static #db = null;
 
-        return this.#db.put(store, ...rows);
+            static async open()
+            {
+                if(this.#db === null)
+                {
+                    this.#db = await new DB(this.#name);
+
+                    await this.#db.open(this.#stores, this.#version);
+                }
+
+                return this.#db;
+            }
+        }
     }
 }

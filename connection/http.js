@@ -13,7 +13,7 @@ export default class Http extends Connection
         this.#options = { ...this.#options, ...options };
     }
 
-    async *fetch(query)
+    async *fetch(query, args)
     {
         yield (await fetch(`${this.#url}${query}`, this.#options)).text();
     }
