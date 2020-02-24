@@ -13,7 +13,11 @@ export default class List extends Type
     {
         if(Array.isArray(v) === false)
         {
-            if(typeof v[Symbol.iterator] === 'function')
+            if(typeof v === 'string')
+            {
+                v = JSON.parse(v);
+            }
+            else if(typeof v[Symbol.iterator] === 'function')
             {
                 v = Array.from(v);
             }
