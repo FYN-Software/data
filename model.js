@@ -1,10 +1,9 @@
 import Query from './query/query.js';
-import Type from './type/type.js';
-import ObjectType from './type/object.js';
 import HasMany from './relation/hasMany.js';
 import HasOne from './relation/hasOne.js';
 import OwnsMany from './relation/ownsMany.js';
 import OwnsOne from './relation/ownsOne.js';
+import ObjectType from './type/object.js';
 
 export default class Model extends ObjectType
 {
@@ -22,12 +21,16 @@ export default class Model extends ObjectType
     #source = 'default';
     #raw = false;
 
-
     constructor(value)
     {
         super(value);
 
         this.#sources = new Map(Object.entries(this.constructor.sources));
+
+        for(const source of this.#sources.values())
+        {
+            source.owner = this;
+        }
     }
 
     toTransferable()

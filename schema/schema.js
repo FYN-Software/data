@@ -1,5 +1,17 @@
 export default class Schema
 {
+    #source;
+
+    get source()
+    {
+        return this.#source;
+    }
+
+    set source(s)
+    {
+        this.#source = s;
+    }
+
     constructor()
     {
 

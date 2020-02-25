@@ -17,6 +17,19 @@ export default class Relation extends Type
 
     __set(v)
     {
+        if(v !== null)
+        {
+            if(this.constructor.many)
+            {
+                console.log(v.map(i => new this.target(i)));
+            }
+            else
+            {
+                console.info('Implement non-many relation value setter');
+                console.log(v);
+            }
+        }
+
         return v instanceof QueuedPromise
             ? v
             : new QueuedPromise(v instanceof Promise ? v : Promise.resolve(v));

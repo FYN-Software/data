@@ -4,9 +4,20 @@ import Schema from './schema/schema.js';
 
 export default class Source
 {
+    #owner;
     #connection;
     #adapter;
     #schema;
+
+    get owner()
+    {
+        return this.#owner;
+    }
+
+    set owner(s)
+    {
+        this.#owner = s;
+    }
 
     constructor(connection, adapter, schema)
     {
@@ -28,6 +39,10 @@ export default class Source
         this.#connection = connection;
         this.#adapter = adapter;
         this.#schema = schema;
+
+        connection.source = this;
+        adapter.source = this;
+        schema.source = this;
     }
 
     async *fetch(query, args)
