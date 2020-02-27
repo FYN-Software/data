@@ -27,7 +27,7 @@ export default class Query
         return this.#methods;
     }
 
-    async find(args = {})
+    find(args = {})
     {
         return this.limit(1).#target.find(this, args);
     }

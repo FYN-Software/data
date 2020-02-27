@@ -15,7 +15,7 @@ export default class List extends Type
         {
             if(typeof v === 'string')
             {
-                v = JSON.parse(v);
+                v = JSON.tryParse(v.replace(/'/g, '"'));
             }
             else if(typeof v[Symbol.iterator] === 'function')
             {

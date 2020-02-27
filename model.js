@@ -1,3 +1,4 @@
+import QueuedPromise from '../core/queuedPromise.js';
 import Query from './query/query.js';
 import HasMany from './relation/hasMany.js';
 import HasOne from './relation/hasOne.js';
@@ -63,21 +64,23 @@ export default class Model extends ObjectType
         }
     }
 
-    async find(query, args = {})
+    find(query, args = {})
     {
-        const iterator = this.fetch(query, args);
-        const v = (await iterator.next()).value;
+        return new QueuedPromise((async () => {
+            const iterator = this.fetch(query, args);
+            const v = (await iterator.next()).value;
 
-        iterator.return();
+            iterator.return();
 
-        if(this.#raw === true)
-        {
-            return r;
-        }
+            if(this.#raw === true)
+            {
+                return r;
+            }
 
-        return v === undefined
-            ? null
-            : new this.constructor(v);
+            return v === undefined
+                ? null
+                : new this.constructor(v);
+        })());
     }
     async *findAll(query, args = {})
     {
@@ -110,7 +113,7 @@ export default class Model extends ObjectType
     {
         return new Query(new this).limit(...args);
     }
-    static async find(...args)
+    static find(...args)
     {
         return new Query(new this).find(...args);
     }
