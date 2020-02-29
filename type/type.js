@@ -69,6 +69,16 @@ export default class Type extends EventTarget
         return v;
     }
 
+    static get(cb)
+    {
+        if(typeof cb !== 'function')
+        {
+            throw new Error(`Expected a callable, got '${cb}'`);
+        }
+
+        return this._configure('getter', cb);
+    }
+
     static set(cb)
     {
         if(typeof cb !== 'function')
