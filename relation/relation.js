@@ -1,7 +1,7 @@
 import QueuedPromise from '../../core/queuedPromise.js';
-import Type from '../type/type.js';
+import List from '../type/list.js';
 
-export default class Relation extends Type
+export default class Relation extends List
 {
     #fetched = false;
 
@@ -10,20 +10,23 @@ export default class Relation extends Type
         return true;
     }
 
-    constructor(value)
-    {
-        super({}, value);
-    }
-
     __set(v)
     {
-        return v instanceof QueuedPromise
+        v =  v instanceof QueuedPromise
             ? v
             : new QueuedPromise(v instanceof Promise ? v : Promise.resolve(v));
+
+        return v.then(v => {
+            return super.__set(this.constructor.many ? v : [ v ]);
+        });
     }
 
     __get(v)
     {
+        v = super.__get(v);
+
+        return this.constructor.many ? v : v[0];
+
         if(this.#fetched === false)
         {
             this.#fetched = true;
@@ -31,7 +34,7 @@ export default class Relation extends Type
             let query = this.target;
             const args = {};
 
-            for(const [ local, foreign ] of Object.entries(this.bindings))
+            for(const [ local, foreign ] of Object.entries(this.bindings || {}))
             {
                 query = query.where(this.target[foreign].isEqualTo(`@${foreign}`));
                 args[foreign] = this._owner[local];
@@ -47,7 +50,7 @@ export default class Relation extends Type
             }
             else
             {
-                v = this.value = this.setValue(value);
+                v = this.value = this.setValue([ value ]);
             }
         }
 
@@ -61,7 +64,7 @@ export default class Relation extends Type
 
     static targets(target)
     {
-        return this._configure('target', target);
+        return super.type(target);
     }
 
     static maps(conf)

@@ -1,19 +1,9 @@
-export default class HasMany
+import Relation from './relation.js';
+
+export default class HasMany extends Relation
 {
     static get many()
     {
         return true;
-    }
-
-    targets(t)
-    {
-        this._target = t;
-
-        return this;
-    }
-
-    static targets(t)
-    {
-        return (new this).targets(t);
     }
 }
