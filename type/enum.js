@@ -76,6 +76,11 @@ export default class Enum extends Type
         return self;
     }
 
+    static nameOf(k)
+    {
+        return this[keys].get(k);
+    }
+
     static indexOf(k)
     {
         return this[indices].get(k);
