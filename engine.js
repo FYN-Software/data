@@ -1,5 +1,6 @@
 import Model from './model.js';
 import Source from './source.js';
+import Query from './query/query.js';
 
 import AdapterBase from './adapter/adapter.js';
 import Json from './adapter/json.js';
@@ -37,6 +38,7 @@ const Connection = {
 };
 
 export {
+    Query,
     Model,
     Source,
     Connection,

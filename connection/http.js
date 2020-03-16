@@ -15,6 +15,6 @@ export default class Http extends Connection
 
     async *fetch(query, args)
     {
-        yield (await fetch(`${this.#url}${query}`, this.#options)).text();
+        yield (await fetch(`${this.#url}${query.url}`, { ...this.#options, ...query.options })).text();
     }
 }

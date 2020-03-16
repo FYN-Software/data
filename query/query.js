@@ -42,6 +42,12 @@ export default class Query
 
         return this;
     }
+    update(...args)
+    {
+        this.#methods.push([ 'update', args ]);
+
+        return this;
+    }
     where(...args)
     {
         this.#methods.push([ 'where', args ]);

@@ -88,8 +88,6 @@ export default class Enum extends Type
 
     static valueOf(k)
     {
-        // console.log(this.passed, k);
-
         return this[properties][this[keys].get(k)];
     }
 }
