@@ -50,11 +50,13 @@ export default class Model extends ObjectType
         yield* this.#sources.get(this.#source).fetch(query, args);
     }
 
-    async save()
+    async save(args = {})
     {
+        console.log(this, this.value);
+
         try
         {
-            await Array.fromAsync(this.fetch(new Query(this).insert(), {}));
+            await Array.fromAsync(this.fetch(new Query(this).insert(this.value), args));
 
             return true;
         }
