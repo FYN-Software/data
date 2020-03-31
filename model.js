@@ -21,6 +21,7 @@ export default class Model extends ObjectType
     #query = new Query(this);
     #source = 'default';
     #raw = false;
+    #new = true;
 
     constructor(value)
     {
@@ -50,13 +51,11 @@ export default class Model extends ObjectType
         yield* this.#sources.get(this.#source).fetch(query, args);
     }
 
-    async save(args = {})
+    async save()
     {
-        console.log(this, this.value);
-
         try
         {
-            await Array.fromAsync(this.fetch(new Query(this).insert(this.value), args));
+            await Array.fromAsync(this.fetch(new Query(this)[this.#new ? 'insert' : 'update'](this.value), {}));
 
             return true;
         }
@@ -81,7 +80,10 @@ export default class Model extends ObjectType
 
             return v === undefined
                 ? null
-                : new this.constructor(v);
+                : (() => {
+                    const inst = new this.constructor(v);
+                    inst.#new = false;
+                    return inst })();
         })());
     }
     async *findAll(query, args = {})
@@ -95,7 +97,10 @@ export default class Model extends ObjectType
 
         for await (const r of this.fetch(query, args))
         {
-            yield (new this.constructor(r));
+            const inst = new this.constructor(r);
+            inst.#new = false;
+
+            yield inst;
         }
     }
 
