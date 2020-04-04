@@ -17,15 +17,27 @@ export default class Model extends ObjectType
         throw new Error(`Not implemented`);
     }
 
+    #strategies = new Map();
+    #strategy = 'default';
     #sources = new Map();
-    #query = new Query(this);
     #source = 'default';
+    #query = new Query(this);
     #raw = false;
     #new = true;
 
     constructor(value)
     {
         super(value);
+
+        if(this.constructor.hasOwnProperty('strategies'))
+        {
+            this.#strategies = new Map(Object.entries(this.constructor.strategies));
+
+            for(const strategy of this.#strategies.values())
+            {
+                strategy.owner = this;
+            }
+        }
 
         this.#sources = new Map(Object.entries(this.constructor.sources));
 
@@ -37,18 +49,24 @@ export default class Model extends ObjectType
 
     toTransferable()
     {
-        return {
-            name: this.value.name,
-            start: this.value.start,
-            end: this.value.end,
-            link: this.value.link,
-            image: this.value.image,
-        };
+        return this[Symbol.toPrimitive]('transferable');
     }
 
     async *fetch(query, args)
     {
-        yield* this.#sources.get(this.#source).fetch(query, args);
+        yield* (this.#strategies.get(this.#strategy) ?? this.#sources.get(this.#source)).fetch(query, args);
+    }
+
+    getSource(source)
+    {
+        return this.#sources.get(source);
+    }
+
+    to(source)
+    {
+        this.#source = source;
+
+        return this;
     }
 
     async save()
@@ -104,6 +122,13 @@ export default class Model extends ObjectType
         }
     }
 
+    static from(source)
+    {
+        const inst = new this;
+        inst.#source = source;
+
+        return new Query(inst);
+    }
     static where(...args)
     {
         return new Query(new this).where(...args);

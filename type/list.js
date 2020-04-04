@@ -96,6 +96,20 @@ export default class List extends Type
         });
     }
 
+    [Symbol.toPrimitive](hint)
+    {
+        switch (hint)
+        {
+            case 'transferable':
+            {
+                return Array.from(this.value, i => i[Symbol.toPrimitive](hint));
+            }
+
+            default:
+                return this.value;
+        }
+    }
+
     get [Symbol.toStringTag]()
     {
         return `${super[Symbol.toStringTag]}.List`;

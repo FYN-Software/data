@@ -1,7 +1,8 @@
 import * as Comlink from 'https://unpkg.com/comlink/dist/esm/comlink.mjs';
+import idb from '../../core/driver/idb.js';
 import Connection from './connection.js';
 
-const DB = Comlink.wrap(new Worker('/node_modules/@fyn-software/core/driver/idb.js', { type: 'module' }));
+// const DB = Comlink.wrap(new Worker('/crossOriginWorker.js?module=https://cdn.fyn.nl/node_modules/@fyn-software/core/driver/idb.js', { type: 'module' }));
 
 export default class IndexedDB extends Connection
 {
@@ -21,21 +22,23 @@ export default class IndexedDB extends Connection
 
     async *fetch(query, args)
     {
-        if(query.methods.some(([ m ]) => m === 'insert'))
+        try
         {
-            await (await this.constructor.open()).put(this.#store, query.target.toTransferable());
+            if(query.methods.some(([ m ]) => [ 'insert', 'update' ].includes(m)))
+            {
+                await (await this.constructor.open()).put(this.#store, query.target.toTransferable());
 
-            yield * [];
+                yield* [];
+            }
+            else
+            {
+                yield* await (await this.constructor.open()).get(this.#store);
+            }
         }
-        else
+        catch (e)
         {
-            yield* await (await this.constructor.open()).get(this.#store);
+            console.error(e);
         }
-    }
-
-    async put(query, ...rows)
-    {
-        return (await this.constructor.open()).put(this.#store, ...rows);
     }
 
     static define(name, stores, version)
@@ -47,11 +50,23 @@ export default class IndexedDB extends Connection
             static #version = version;
             static #db = null;
 
+            // static async open()
+            // {
+            //     if(this.#db === null)
+            //     {
+            //         this.#db = await new DB(this.#name);
+            //
+            //         await this.#db.open(this.#stores, this.#version);
+            //     }
+            //
+            //     return this.#db;
+            // }
+
             static async open()
             {
                 if(this.#db === null)
                 {
-                    this.#db = await new DB(this.#name);
+                    this.#db = new idb(this.#name);
 
                     await this.#db.open(this.#stores, this.#version);
                 }

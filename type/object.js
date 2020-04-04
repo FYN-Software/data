@@ -41,7 +41,7 @@ export default class extends Type
 
         for(const [ k, v ] of Object.entries(this.template))
         {
-            const property = new v(value[k] || undefined);
+            const property = new v(value[k] ?? undefined);
 
             if((property instanceof v) === false)
             {
@@ -66,11 +66,17 @@ export default class extends Type
                 changed: d => this.emit('changed', d),
             });
 
-            Object.defineProperty(returnValue, k, {
+            Object.defineProperty(returnValue, k,   {
                 get: () => property.value,
                 set: v => property.setValue(v),
                 configurable: false,
                 enumerable: true,
+            });
+
+            Object.defineProperty(returnValue, `__prop_${k}`, {
+                value: property,
+                configurable: false,
+                enumerable: false,
             });
         }
 
@@ -85,6 +91,15 @@ export default class extends Type
         }
 
         return returnValue;
+    }
+
+    [Symbol.toPrimitive](hint)
+    {
+        return Object.freeze(
+            Object.fromEntries(
+                Object.keys(this.template).map(k => [ k, this.value[`__prop_${k}`][Symbol.toPrimitive](hint) ])
+            )
+        );
     }
 
     get [Symbol.toStringTag]()

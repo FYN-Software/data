@@ -17,6 +17,9 @@ import ConnectionBase from './connection/connection.js';
 import IndexedDB from './connection/indexedDB.js';
 import Http from './connection/http.js';
 
+import StrategyBase from './strategy/strategy.js';
+import CacheFirst from './strategy/cacheFirst.js';
+
 const Adapter = {
     Adapter: AdapterBase,
     Json,
@@ -37,6 +40,11 @@ const Connection = {
     IndexedDB,
 };
 
+const Strategy = {
+    Strategy: StrategyBase,
+    CacheFirst
+};
+
 export {
     Query,
     Model,
@@ -44,4 +52,5 @@ export {
     Connection,
     Adapter,
     Schema,
+    Strategy,
 };
