@@ -1,8 +1,6 @@
-import * as Comlink from 'https://unpkg.com/comlink/dist/esm/comlink.mjs';
+import * as Comlink from 'https://cdn.jsdelivr.net/npm/comlink@4.2.0/dist/esm/comlink.min.mjs';
 import idb from '../../core/driver/idb.js';
 import Connection from './connection.js';
-
-// const DB = Comlink.wrap(new Worker('/crossOriginWorker.js?module=https://cdn.fyn.nl/node_modules/@fyn-software/core/driver/idb.js', { type: 'module' }));
 
 export default class IndexedDB extends Connection
 {
