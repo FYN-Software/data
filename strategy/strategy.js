@@ -16,8 +16,19 @@ export default class Strategy
         this.#owner = s;
     }
 
-    async *fetch(sources, query, args)
+    async *fetch(query, args)
     {
         throw new Error('Not implemented');
+    }
+
+    static get default()
+    {
+        return class extends this
+        {
+            async *fetch(query, args)
+            {
+                yield* this.owner.getSource('default').fetch(query, args);
+            }
+        };
     }
 }

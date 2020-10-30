@@ -15,4 +15,11 @@ export default class Connection
     async *fetch(query)
     {
     }
+
+    static get default()
+    {
+        return class extends this
+        {
+        }
+    }
 }

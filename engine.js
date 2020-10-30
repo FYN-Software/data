@@ -16,6 +16,7 @@ import Bitbucket from './schema/bitbucket.js';
 import ConnectionBase from './connection/connection.js';
 import IndexedDB from './connection/indexedDB.js';
 import Http from './connection/http.js';
+import Feed from './connection/feed.js';
 
 import StrategyBase from './strategy/strategy.js';
 import CacheFirst from './strategy/cacheFirst.js';
@@ -36,8 +37,9 @@ const Schema = {
 
 const Connection = {
     Connection: ConnectionBase,
-    Http,
     IndexedDB,
+    Http,
+    Feed,
 };
 
 const Strategy = {
