@@ -1,4 +1,4 @@
-import * as Comlink from 'https://cdn.jsdelivr.net/npm/comlink@4.2.0/dist/esm/comlink.min.mjs';
+import * as Comlink from 'https://fyncdn.nl/js/lib/comlink/comlink.js';
 import idb from '../../core/driver/idb.js';
 import Connection from './connection.js';
 
@@ -47,18 +47,6 @@ export default class IndexedDB extends Connection
             static #stores = stores;
             static #version = version;
             static #db = null;
-
-            // static async open()
-            // {
-            //     if(this.#db === null)
-            //     {
-            //         this.#db = await new DB(this.#name);
-            //
-            //         await this.#db.open(this.#stores, this.#version);
-            //     }
-            //
-            //     return this.#db;
-            // }
 
             static async open()
             {

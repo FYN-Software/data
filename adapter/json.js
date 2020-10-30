@@ -6,19 +6,26 @@ export default class Json extends Adapter
     {
         for await (let value of data)
         {
-            value = JSON.parse(value);
-
-            if(Array.isArray(value))
+            try
             {
-                for(const d of value)
+                value = JSON.parse(value);
+
+                if(Array.isArray(value))
                 {
-                    yield* super.from(d);
+                    for(const d of value)
+                    {
+                        yield* super.from(d);
+                    }
+
+                    return;
                 }
 
-                return;
+                yield* super.from(value);
             }
-
-            yield* super.from(value);
+            catch (e)
+            {
+                console.error(e);
+            }
         }
     }
 

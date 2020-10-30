@@ -73,12 +73,14 @@ export default class Model extends ObjectType
     {
         try
         {
-            await Array.fromAsync(this.fetch(new Query(this)[this.#new ? 'insert' : 'update'](this.value), {}));
+            await Array.fromAsync(this.fetch(new Query(this)[this.#new ? 'insert' : 'update'](this.$.value), {}));
 
             return true;
         }
-        catch
+        catch(e)
         {
+            console.error(e)
+
             return false;
         }
     }
@@ -89,7 +91,7 @@ export default class Model extends ObjectType
             const iterator = this.fetch(query, args);
             const v = (await iterator.next()).value;
 
-            iterator.return();
+            await iterator.return(null);
 
             if(this.#raw === true)
             {

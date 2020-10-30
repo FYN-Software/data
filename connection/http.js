@@ -3,22 +3,43 @@ import Connection from './connection.js';
 export default class Http extends Connection
 {
     #url;
-    #reader;
     #options = { credentials: 'same-origin' };
 
-    constructor(url, options, reader = null)
+    constructor(url, options)
     {
         super();
 
         this.#url = url;
         this.#options = { ...this.#options, ...options };
-        this.#reader = reader ?? async function*(response) {
-            yield response.text();
-        };
     }
 
     async *fetch(query, args)
     {
-        yield this.#reader(await fetch(`${this.#url}${query.url}`, { ...this.#options, ...query.options }));
+        if(query.url === undefined)
+        {
+            return;
+        }
+
+        const url = `${this.#url}${query.url}`;
+        const options = { ...this.#options, ...query.options };
+
+        const response  = await fetch(url, options);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while(true)
+        {
+            const { done, value } = await reader.read();
+
+            if(done)
+            {
+                break;
+            }
+
+            yield decoder.decode(value, {stream: true});
+        }
+
+        reader.releaseLock();
+
     }
 }

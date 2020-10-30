@@ -6,9 +6,9 @@ export default class extends Type
 {
     constructor(value)
     {
-        super({ value: {}, template: {} }, value);
+        super({ value: {}, template: {}, props: {} }, value);
 
-        for(let [k, v] of Object.entries(this.template))
+        for(let [k, v] of Object.entries(this.$.template))
         {
             if((v instanceof Type) === false && (v.prototype instanceof Type) === false)
             {
@@ -18,8 +18,10 @@ export default class extends Type
             if(this.hasOwnProperty(k) === false)
             {
                 Object.defineProperty(this, k, {
-                    get: () => this.value[k],
-                    set: v => this.value[k] = v,
+                    get: () => this.$.value[k],
+                    set: v => this.$.value[k] = v,
+                    configurable: false,
+                    enumerable: true,
                 });
             }
         }
@@ -39,7 +41,7 @@ export default class extends Type
 
         const returnValue = value;
 
-        for(const [ k, v ] of Object.entries(this.template))
+        for(const [ k, v ] of Object.entries(this.$.template))
         {
             const property = new v(value[k] ?? undefined);
 
@@ -66,21 +68,21 @@ export default class extends Type
                 changed: d => this.emit('changed', d),
             });
 
-            Object.defineProperty(returnValue, k,   {
-                get: () => property.value,
+            Object.defineProperty(returnValue, k, {
+                get: () => property.$.value,
                 set: v => property.setValue(v),
                 configurable: false,
                 enumerable: true,
             });
 
-            Object.defineProperty(returnValue, `__prop_${k}`, {
+            Object.defineProperty(this.$.props, k, {
                 value: property,
-                configurable: false,
+                configurable: true,
                 enumerable: false,
             });
         }
 
-        for(const [ name, descriptor ] of Object.entries(Object.getOwnPropertyDescriptors(this.template)))
+        for(const [ name, descriptor ] of Object.entries(Object.getOwnPropertyDescriptors(this.$.template)))
         {
             if(descriptor.get === undefined)
             {
@@ -95,11 +97,17 @@ export default class extends Type
 
     [Symbol.toPrimitive](hint)
     {
-        return Object.freeze(
-            Object.fromEntries(
-                Object.keys(this.template).map(k => [ k, this.value[`__prop_${k}`][Symbol.toPrimitive](hint) ])
-            )
-        );
+        switch (hint)
+        {
+            case 'transferable':
+            case 'clone':
+            default:
+                return Object.freeze(
+                    Object.fromEntries(
+                        Object.keys(this.$.template).map(k => [ k, this.$.props[k][Symbol.toPrimitive](hint) ])
+                    )
+                );
+        }
     }
 
     get [Symbol.toStringTag]()

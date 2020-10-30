@@ -14,7 +14,7 @@ export default class extends Type
             throw new Error(`Given value '${v}' is NaN`);
         }
 
-        return Math.clamp(this.min, this.max, v);
+        return Math.clamp(this.$.min, this.$.max, v);
     }
 
     static min(i)

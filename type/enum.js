@@ -36,7 +36,7 @@ export default class Enum extends Type
 
     [Symbol.toPrimitive](hint)
     {
-        return this.constructor.nameOf(this.value);
+        return this.constructor.nameOf(this.$.value);
     }
 
     get [Symbol.toStringTag]()
