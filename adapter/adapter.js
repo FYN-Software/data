@@ -14,7 +14,7 @@ export default class Adapter
         this.#source = s;
     }
 
-    constructor({ from, to } = { from: async function*(d){ yield d; }, to: async function*(d){ yield d; } })
+    constructor({ from, to } = { from: async function*(d){ yield* d; }, to: async function*(d){ yield* d; } })
     {
         this.#from = from;
         this.#to = to;

@@ -20,6 +20,8 @@ export default class IndexedDB extends Connection
 
     async *fetch(query, args)
     {
+        console.log(query, args);
+
         try
         {
             if(query.methods.some(([ m ]) => [ 'insert', 'update' ].includes(m)))

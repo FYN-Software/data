@@ -2,7 +2,7 @@ import Adapter from './adapter.js';
 
 export default class Json extends Adapter
 {
-    async *from(data)
+    static async *#reader(data)
     {
         for await (let value of data)
         {
@@ -12,21 +12,23 @@ export default class Json extends Adapter
 
                 if(Array.isArray(value))
                 {
-                    for(const d of value)
-                    {
-                        yield* super.from(d);
-                    }
-
-                    return;
+                    yield* value
                 }
-
-                yield* super.from(value);
+                else
+                {
+                    yield value;
+                }
             }
             catch (e)
             {
                 console.error(e);
             }
         }
+    };
+
+    async *from(data)
+    {
+        yield* super.from(Json.#reader(data));
     }
 
     async to(data)
