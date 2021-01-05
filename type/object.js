@@ -92,6 +92,11 @@ export default class extends Type
         return `${super[Symbol.toStringTag]}.Object`;
     }
 
+    static get [Symbol.iterator]()
+    {
+        return Object.entries(this);
+    }
+
     static define(template)
     {
         for(const [ key, item ] of Object.entries(template))
