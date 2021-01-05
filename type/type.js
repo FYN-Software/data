@@ -9,41 +9,39 @@ export default class Type extends EventTarget
     #name = '';
     #owner = null;
     #value = null;
+    #config = {};
 
     constructor(defaults = {}, value = undefined)
     {
         super();
 
         const config = { ...baseConfig, ...defaults, ...this.constructor.config };
+        value ??= config['value'];
 
-        for(const name of Object.keys(config).filter(n => n !== 'value'))
-        {
-            Object.defineProperty(this, name, {
-                value: config[name],
-                writable: true,
-                enumerable: true,
-                configurable: false,
-            });
-        }
-
-        Object.defineProperty(this, 'value', {
-            get: () => this.__get(this.getter.apply(this, [ this.#value ])),
-            set: v => this.#value = this.__set(this.setter.apply(this, [ v ])),
+        Object.defineProperty(config, 'value', {
+            get: () => this.__get(this.$.getter.apply(this, [ this.#value ])),
+            set: v => this.#value = this.__set(this.$.setter.apply(this, [ v ])),
             enumerable: true,
             configurable: false,
         });
 
-        this.value = value || config['value'];
+        this.#config = config;
+        this.$.value = value;
     }
 
     [Symbol.toPrimitive](hint)
     {
-        return this.value;
+        return this.$.value;
     }
 
     get [Symbol.toStringTag]()
     {
         return 'Type';
+    }
+
+    get $()
+    {
+        return this.#config;
     }
 
     __get(v)
@@ -59,11 +57,11 @@ export default class Type extends EventTarget
     {
         const old = this.#value;
 
-        this.value = await v;
+        this.$.value = await v;
 
         if(equals(old, this.#value) === false)
         {
-            this.emit('changed', { old, new: this.value });
+            this.emit('changed', { old, new: this.$.value });
         }
 
         return v;

@@ -14,7 +14,7 @@ export default class extends Type
 
     __set(v)
     {
-        return String(v).padEnd(this.min, ' ').substr(0, this.max);
+        return String(v).padEnd(this.$.min, ' ').substr(0, this.$.max);
     }
 
     static min(i)

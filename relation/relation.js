@@ -44,13 +44,13 @@ export default class Relation extends List
 
             if(this.constructor.many)
             {
-                v = this.value = Array.fromAsync(value);
+                v = this.$.value = Array.fromAsync(value);
 
                 this.setValue(v);
             }
             else
             {
-                v = this.value = this.setValue([ value ]);
+                v = this.$.value = this.setValue([ value ]);
             }
         }
 

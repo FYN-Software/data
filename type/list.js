@@ -1,4 +1,4 @@
-import Type from './type.js';
+import Type, { Any } from './type.js';
 
 export default class List extends Type
 {
@@ -23,7 +23,93 @@ export default class List extends Type
             }
             else if(typeof v[Symbol.asyncIterator] === 'function')
             {
-                return Array.fromAsync(v).then(v => this.__set(v));
+                if(v.hasOwnProperty('__marker__') === true)
+                {
+                    return v;
+                }
+
+                const self = this;
+
+                return new class
+                {
+                    __marker__;
+                    #value;
+
+                    async find(precondition)
+                    {
+                        for await (const item of this)
+                        {
+                            if((await precondition(item)) === true)
+                            {
+                                return item;
+                            }
+                        }
+                    }
+
+                    async join(separator)
+                    {
+                        const items = [];
+                        for await (const item of this)
+                        {
+                            items.push(item);
+                        }
+
+                        return items.join(separator);
+                    }
+
+                    async *map(callback)
+                    {
+                        let i = 0;
+                        for await (const item of this)
+                        {
+                            yield await callback(item, i);
+
+                            i++;
+                        }
+
+                        return this;
+                    }
+
+                    async *filter(callback)
+                    {
+                        let i = 0;
+                        for await (const item of this)
+                        {
+                            if((await callback(item, i)) === true)
+                            {
+                                yield item;
+                            }
+
+                            i++;
+                        }
+
+                        return this;
+                    }
+
+                    async *[Symbol.asyncIterator]()
+                    {
+                        const value = [];
+
+                        for await (let item of this.#value ?? v)
+                        {
+                            if(this.#value === undefined)
+                            {
+                                item = item[Symbol.toStringTag]?.startsWith('Type') ? item : new self.$.type(item);
+                                item.on({ changed: d => self.emit('changed', d) })
+                                value.push(item);
+                            }
+
+                            yield item;
+                        }
+
+                        if(this.#value === undefined)
+                        {
+                            this.#value = value;
+                        }
+                    }
+                }
+
+                // return Array.fromAsync(v).then(v => this.__set(v));
             }
             else
             {
@@ -31,48 +117,48 @@ export default class List extends Type
             }
         }
 
-        if(this.type !== null && v.some(i => (i instanceof this.type) === false))
+        try
         {
-            throw new Error(`Not all items are of type '${this.type.name}'`);
+            v.some(i => (i instanceof this.$.type) === false)
+        }
+        catch (e)
+        {
+            console.log(v);
+
+            throw e;
+        }
+
+        if(this.$.type !== null && v.some(i => (i instanceof this.$.type) === false))
+        {
+            throw new Error(`Not all items are of type '${this.$.type.name}'`);
         }
 
         v = this.normalize(v);
 
-        try
+        for(const type of v)
         {
-            for(const type of v)
-            {
-                type.on({
-                    changed: d => this.emit('changed', d),
-                })
-            }
-        }
-        catch (e)
-        {
-            console.log(v, v.map(i => i[Symbol.toStringTag]));
-
-            throw e;
+            type.on({
+                changed: d => this.emit('changed', d),
+            })
         }
 
         return new Proxy(v, {
             get: (target, property) => {
                 if (typeof property === 'string' && Number.isInteger(Number.parseInt(property)) && target[property] instanceof Type)
                 {
-                    return target[property] && target[property].value;
+                    return target[property] && target[property].$.value;
                 }
 
                 switch (property)
                 {
                     case Symbol.iterator:
-                        return target[property].bind(target);
+                        return target[Symbol.iterator].bind(target);
 
                     case Symbol.asyncIterator:
-                        console.trace(property);
-
-                        return this[property].bind(this);
+                        return this[Symbol.asyncIterator].bind(this);
 
                     case 'groupBy':
-                        return k => this.value.reduce(
+                        return k => this.$.value.reduce(
                             (t, i) => {
                                 (t[i[k]] = t[i[k]] || []).push(i);
 
@@ -87,13 +173,28 @@ export default class List extends Type
 
                     case 'first':
                     case 'last':
-                        return target[property].value;
+                        return target[property].$.value;
 
                     default:
                         return target[property];
                 }
             },
         });
+    }
+
+    [Symbol.toPrimitive](hint)
+    {
+        switch (hint)
+        {
+            case 'transferable':
+            case 'clone':
+            {
+                return Array.from(this.$.value, i => i[Symbol.toPrimitive](hint));
+            }
+
+            default:
+                return this.$.value;
+        }
     }
 
     get [Symbol.toStringTag]()
@@ -129,7 +230,7 @@ export default class List extends Type
 
     normalize(items)
     {
-        return items.map(i => i && i[Symbol.toStringTag] !== undefined && i[Symbol.toStringTag].startsWith('Type') ? i : new this.type(i));
+        return items.map(i => i && i[Symbol.toStringTag] !== undefined && i[Symbol.toStringTag].startsWith('Type') ? i : new this.$.type(i));
     }
 
     static [Symbol.hasInstance](v)
@@ -139,14 +240,19 @@ export default class List extends Type
 
     get [Symbol.iterator]()
     {
-        return this.value[property].bind(this.value);
+        return this.$.value[property].bind(this.$.value);
     }
 
     async *[Symbol.asyncIterator]()
     {
         outer:
-        for(let item of this.value.map(i => i.value))
+        for(let item of this.$.value)
         {
+            if(item.constructor.name === 'Any')
+            {
+                item = item.$.value;
+            }
+
             for(const [method, callback] of this.#queue)
             {
                 switch (method)

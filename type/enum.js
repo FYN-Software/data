@@ -34,6 +34,11 @@ export default class Enum extends Type
         return v;
     }
 
+    [Symbol.toPrimitive](hint)
+    {
+        return this.constructor.nameOf(this.$.value);
+    }
+
     get [Symbol.toStringTag]()
     {
         return `${super[Symbol.toStringTag]}.Enum`;
