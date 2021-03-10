@@ -53,10 +53,14 @@ export default class Enum extends Type
     {
         const self = this._configure('template', Object.seal({ ...template }));
 
-        self[Symbol.iterator] = function*(){
-            for(const [k, v] of Object.entries(self[properties]))
+        self[Symbol.iterator] = function*()
+        {
+            //NOTE(Chris Kruining)
+            // Use destructor + rest to copy
+            // items instead of reference
+            for(const [k, { ...v } ] of Object.entries(self[properties]))
             {
-                v.value = k;
+                v.value = self[values].get(k);
 
                 yield v;
             }

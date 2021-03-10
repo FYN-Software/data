@@ -1,5 +1,5 @@
 import * as Comlink from 'https://fyncdn.nl/js/lib/comlink/comlink.js';
-import idb from '../../core/driver/idb.js';
+import Idb from '../../core/driver/idb.js';
 import Connection from './connection.js';
 
 export default class IndexedDB extends Connection
@@ -20,8 +20,6 @@ export default class IndexedDB extends Connection
 
     async *fetch(query, args)
     {
-        console.log(query, args);
-
         try
         {
             if(query.methods.some(([ m ]) => [ 'insert', 'update' ].includes(m)))
@@ -54,7 +52,7 @@ export default class IndexedDB extends Connection
             {
                 if(this.#db === null)
                 {
-                    this.#db = new idb(this.#name);
+                    this.#db = new Idb(this.#name);
 
                     await this.#db.open(this.#stores, this.#version);
                 }

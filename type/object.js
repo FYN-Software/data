@@ -102,11 +102,13 @@ export default class extends Type
             case 'transferable':
             case 'clone':
             default:
+            {
                 return Object.freeze(
                     Object.fromEntries(
                         Object.keys(this.$.template).map(k => [ k, this.$.props[k][Symbol.toPrimitive](hint) ])
                     )
                 );
+            }
         }
     }
 

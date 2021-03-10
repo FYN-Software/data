@@ -30,7 +30,8 @@ export default class List extends Type
 
                 const self = this;
 
-                return new class
+                //TODO(Chris Kruining) This should probably be it's own class (in it's own file)
+                return new class Iterable
                 {
                     __marker__;
                     #value;
@@ -108,24 +109,11 @@ export default class List extends Type
                         }
                     }
                 }
-
-                // return Array.fromAsync(v).then(v => this.__set(v));
             }
             else
             {
                 throw new Error(`Expected an 'Array', got '${v.constructor.name}'`);
             }
-        }
-
-        try
-        {
-            v.some(i => (i instanceof this.$.type) === false)
-        }
-        catch (e)
-        {
-            console.log(v);
-
-            throw e;
         }
 
         if(this.$.type !== null && v.some(i => (i instanceof this.$.type) === false))
@@ -230,7 +218,7 @@ export default class List extends Type
 
     normalize(items)
     {
-        return items.map(i => i && i[Symbol.toStringTag] !== undefined && i[Symbol.toStringTag].startsWith('Type') ? i : new this.$.type(i));
+        return items.map(i => i?.[Symbol.toStringTag]?.startsWith('Type') ? i : new this.$.type(i));
     }
 
     static [Symbol.hasInstance](v)
