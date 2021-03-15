@@ -1,10 +1,11 @@
-import QueuedPromise from '../core/queuedPromise.js';
-import Query from './query/query.js';
-import HasMany from './relation/hasMany.js';
-import HasOne from './relation/hasOne.js';
-import OwnsMany from './relation/ownsMany.js';
-import OwnsOne from './relation/ownsOne.js';
-import ObjectType from './type/object.js';
+import QueuedPromise from '../../core/queuedPromise.js';
+import Field from './field.js';
+import Query from '../query/query.js';
+import HasMany from '../relation/hasMany.js';
+import HasOne from '../relation/hasOne.js';
+import OwnsMany from '../relation/ownsMany.js';
+import OwnsOne from '../relation/ownsOne.js';
+import ObjectType from '../type/object.js';
 
 export default class Model extends ObjectType
 {
@@ -189,112 +190,6 @@ export default class Model extends ObjectType
         {
             throw new Error(`Expected a '${this.name}', got '${model}' instead`);
         }
-
-        const Field = class Field
-        {
-            #name;
-            #type;
-            #operator;
-            #value;
-
-            constructor(name, type)
-            {
-                this.#name = name;
-                this.#type = type;
-            }
-
-            [Symbol.toPrimitive](hint)
-            {
-                if(hint === 'string')
-                {
-                    return [ `$${this.#name}`, this.#operator, this.#value ].join(' ');
-                }
-
-                return this;
-            }
-
-            isEqualTo(value)
-            {
-                this.#operator = '=';
-                this.#value = value;
-
-                return this;
-            }
-
-            isNotEqualTo(value)
-            {
-                this.#operator = '!=';
-                this.#value = value;
-
-                return this;
-            }
-
-            isGreaterThan(value)
-            {
-                this.#operator = '>';
-                this.#value = value;
-
-                return this;
-            }
-
-            isGreaterThanOrEqualTo(value)
-            {
-                this.#operator = '>=';
-                this.#value = value;
-
-                return this;
-            }
-
-            isLessThan(value)
-            {
-                this.#operator = '<';
-                this.#value = value;
-
-                return this;
-            }
-
-            isLessThanOrEqualTo(value)
-            {
-                this.#operator = '<=';
-                this.#value = value;
-
-                return this;
-            }
-
-            get asc()
-            {
-                this.#operator = 'ASC';
-
-                return this;
-            }
-
-            get desc()
-            {
-                this.#operator = 'DESC';
-
-                return this;
-            }
-
-            get name()
-            {
-                return this.#name;
-            }
-
-            get type()
-            {
-                return this.#type;
-            }
-
-            get operator()
-            {
-                return this.#operator;
-            }
-
-            get value()
-            {
-                return this.#value;
-            }
-        };
 
         for(const [ name, type ] of Object.entries(model.properties))
         {

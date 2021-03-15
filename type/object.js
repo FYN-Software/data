@@ -1,4 +1,4 @@
-import Type from './type.js';
+import Type from '@fyn-software/data/type/type.js';
 
 const structure = Symbol('structure');
 

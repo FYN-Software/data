@@ -1,4 +1,4 @@
-import { equals, clone } from '../../core/extends.js';
+import { equals, clone } from '@fyn-software/core/extends.js';
 
 const baseConfig = { getter: v => v, setter: v => v, value: null };
 

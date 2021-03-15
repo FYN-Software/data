@@ -2,7 +2,7 @@
     "name": "@fyn-software/data",
     "description": "FYN Data",
     "version": "0.0.1",
-    "main": "model.js",
+    "main": "model/model.js",
     "repository": {
         "type": "git",
         "url": "https://github.com/FYN-Software/data"

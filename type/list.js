@@ -1,4 +1,4 @@
-import Type, { Any } from './type.js';
+import Type, { Any } from '@fyn-software/data/type/type.js';
 
 export default class List extends Type
 {

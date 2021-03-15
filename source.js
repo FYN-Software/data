@@ -1,6 +1,6 @@
-import Adapter from './adapter/adapter.js';
-import Connection from './connection/connection.js';
-import Schema from './schema/schema.js';
+import Adapter from '@fyn-software/data/adapter/adapter.js';
+import Connection from '@fyn-software/data/connection/connection.js';
+import Schema from '@fyn-software/data/schema/schema.js';
 
 export default class Source
 {
