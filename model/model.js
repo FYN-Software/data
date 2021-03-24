@@ -22,7 +22,6 @@ export default class Model extends ObjectType
     #strategy = 'default';
     #sources = new Map();
     #source = 'default';
-    #query = new Query(this);
     #raw = false;
     #new = true;
 

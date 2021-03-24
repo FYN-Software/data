@@ -41,6 +41,7 @@ export default class extends Type
 
         const returnValue = value;
 
+        // NOTE(Chris Kruining) Check and copy properties to internal value
         for(const [ k, v ] of Object.entries(this.$.template))
         {
             const property = new v(value[k] ?? undefined);
@@ -62,7 +63,6 @@ export default class extends Type
                 delete returnValue[k];
             }
 
-            property._owner = this;
             property._name = k;
             property.on({
                 changed: d => this.emit('changed', d),
@@ -78,10 +78,11 @@ export default class extends Type
             Object.defineProperty(this.$.props, k, {
                 value: property,
                 configurable: true,
-                enumerable: false,
+                enumerable: true,
             });
         }
 
+        // copy over the models getters to the internal value
         for(const [ name, descriptor ] of Object.entries(Object.getOwnPropertyDescriptors(this.$.template)))
         {
             if(descriptor.get === undefined)
@@ -105,7 +106,9 @@ export default class extends Type
             {
                 return Object.freeze(
                     Object.fromEntries(
-                        Object.keys(this.$.template).map(k => [ k, this.$.props[k][Symbol.toPrimitive](hint) ])
+                        Object
+                            .keys(this.$.template)
+                            .map(k => [ k, this.$.props[k][Symbol.toPrimitive](hint) ])
                     )
                 );
             }
@@ -145,23 +148,5 @@ export default class extends Type
         console.log(this, this.hasOwnProperty(structure), v);
 
         return true;
-    }
-
-    static fromClass(c)
-    {
-        console.dir(c);
-
-        return class extends c
-        {
-            static get [Symbol.species]()
-            {
-                return Type;
-            }
-
-            get __value()
-            {
-                return this;
-            }
-        };
     }
 }

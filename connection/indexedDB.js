@@ -5,7 +5,6 @@ import Connection from './connection.js';
 export default class IndexedDB extends Connection
 {
     #store;
-
     constructor(store)
     {
         super();

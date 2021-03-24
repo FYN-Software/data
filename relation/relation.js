@@ -34,7 +34,7 @@ export default class Relation extends List
             let query = this.target;
             const args = {};
 
-            for(const [ local, foreign ] of Object.entries(this.bindings || {}))
+            for(const [ local, foreign ] of Object.entries(this.bindings ?? {}))
             {
                 query = query.where(this.target[foreign].isEqualTo(`@${foreign}`));
                 args[foreign] = this._owner[local];

@@ -92,21 +92,6 @@ export default class Type extends EventTarget
         return this._configure('value', value);
     }
 
-    set _name(n)
-    {
-        this.#name = n;
-    }
-
-    get _owner()
-    {
-        return this.#owner;
-    }
-
-    set _owner(o)
-    {
-        this.#owner = o;
-    }
-
     static _configure(name, value)
     {
         const owner = this;
