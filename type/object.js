@@ -39,7 +39,8 @@ export default class extends Type
             value = {};
         }
 
-        const returnValue = value;
+        // NOTE(Chris Kruining) Make sure to copy in order to break references...
+        const returnValue = { ...value };
 
         // NOTE(Chris Kruining) Check and copy properties to internal value
         for(const [ k, v ] of Object.entries(this.$.template))
@@ -65,7 +66,9 @@ export default class extends Type
 
             property._name = k;
             property.on({
-                changed: d => this.emit('changed', d),
+                changed: d => {
+                    this.emit('changed', { ...d, property: k })
+                },
             });
 
             Object.defineProperty(returnValue, k, {
