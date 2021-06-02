@@ -1,17 +1,17 @@
-import Type from '@fyn-software/data/type/type.js';
+import Type from './type';
 
-export default class extends Type
+export default class Bool extends Type
 {
-    constructor(value)
+    public constructor(value: boolean|undefined)
     {
         super({ value: false, nullable: false }, value);
     }
 
-    __set(v)
+    protected __set(v: boolean|string|undefined): boolean|undefined
     {
         if(this.$.nullable === true && (v === null || v === undefined))
         {
-            return null;
+            return undefined;
         }
 
         if(typeof v === 'string')
@@ -25,12 +25,12 @@ export default class extends Type
         return Boolean(v);
     }
 
-    static [Symbol.hasInstance](v)
+    public static [Symbol.hasInstance](v: Bool|boolean): boolean
     {
         return typeof v === 'boolean' || v.constructor === this;
     }
 
-    static get nullable()
+    public static get nullable(): typeof Type
     {
         return this._configure('nullable', true);
     }

@@ -1,18 +1,23 @@
-import Type  from '@fyn-software/data/type/type.js';
+import IType  from './iType';
+import Type  from './type';
 
-export default class List extends Type
+type FilterCallback<T> = (item: T, index?: number) => boolean;
+type MapCallback<TIn, TOut> = (item: TIn, index?: number) => TOut;
+type Callback = FilterCallback<any>|MapCallback<any, any>;
+
+export default class List<T extends IType> extends Type
 {
-    #queue = [];
+    private queue: Array<[ string, Callback ]> = [];
 
-    constructor(value)
+    public constructor(value: any)
     {
         super({ value: [], type: Type.Any }, value);
     }
 
-    __set(v)
+    protected __set(v: any)
     {
         const o = v;
-        const resolve = v => {
+        const resolve = (v: Array<T>) => {
             if(this.$.type !== null && v.some(i => (i instanceof this.$.type) === false))
             {
                 throw new Error(`Not all items are of type '${this.$.type.name}'`);
@@ -23,29 +28,39 @@ export default class List extends Type
             for(const type of v)
             {
                 type.on({
-                    changed: d => this.emit('changed', d),
+                    changed: (d: any) => this.emit('changed', d),
                 })
             }
 
             return new Proxy(v, {
-                get: (target, property) => {
-                    if (typeof property === 'string' && Number.isInteger(Number.parseInt(property)) && target[property] instanceof Type)
+                get: (target: Array<T>, property: string|symbol) => {
+                    const index = Number.parseInt(property as string);
+
+                    if (
+                        typeof property === 'string'
+                        && Number.isInteger(Number.parseInt(property))
+                        && target[index] instanceof Type
+                    )
                     {
-                        return target[property] && target[property].$.value;
+                        return target[index]?.$.value;
                     }
 
                     switch (property)
                     {
                         case Symbol.iterator:
-                            return target[Symbol.iterator].bind(target);
+                            return this[Symbol.iterator].bind(this);
 
                         case Symbol.asyncIterator:
                             return this[Symbol.asyncIterator].bind(this);
 
                         case 'groupBy':
-                            return k => this.$.value.reduce(
-                                (t, i) => {
-                                    (t[i[k]] = t[i[k]] || []).push(i);
+                            type GroupedResult = { [key: string]: Array<T> };
+
+                            return (k: string): GroupedResult => this.$.value.reduce(
+                                (t: GroupedResult, i: T): GroupedResult => {
+                                    const key: string = String(i[k as keyof T]);
+
+                                    (t[key] = t[key] ?? []).push(i);
 
                                     return t;
                                 },
@@ -58,10 +73,10 @@ export default class List extends Type
 
                         case 'first':
                         case 'last':
-                            return target[property].$.value;
+                            return target[property]!.$.value;
 
                         default:
-                            return target[property];
+                            return target[property as keyof Array<T>];
                     }
                 },
             });
@@ -89,10 +104,10 @@ export default class List extends Type
                 //TODO(Chris Kruining) This should probably be it's own class (in it's own file)
                 return new class Iterable
                 {
-                    __marker__;
-                    #value;
+                    public __marker__: undefined;
+                    public value: Array<T>|undefined;
 
-                    async find(precondition)
+                    async find(precondition: (item: T) => boolean)
                     {
                         for await (const item of this)
                         {
@@ -103,7 +118,7 @@ export default class List extends Type
                         }
                     }
 
-                    async join(separator)
+                    async join(separator: string)
                     {
                         const items = [];
                         for await (const item of this)
@@ -114,7 +129,7 @@ export default class List extends Type
                         return items.join(separator);
                     }
 
-                    async *map(callback)
+                    async *map<TOut>(callback: MapCallback<T, TOut>)
                     {
                         let i = 0;
                         for await (const item of this)
@@ -127,7 +142,7 @@ export default class List extends Type
                         return this;
                     }
 
-                    async *filter(callback)
+                    async *filter(callback: FilterCallback<T>)
                     {
                         let i = 0;
                         for await (const item of this)
@@ -147,21 +162,21 @@ export default class List extends Type
                     {
                         const value = [];
 
-                        for await (let item of this.#value ?? v)
+                        for await (let item of this.value ?? v)
                         {
-                            if(this.#value === undefined)
+                            if(this.value === undefined)
                             {
                                 item = item[Symbol.toStringTag]?.startsWith('Type') ? item : new self.$.type(item);
-                                item.on({ changed: d => self.emit('changed', d) })
+                                item.on({ changed: (d: any) => self.emit('changed', d) })
                                 value.push(item);
                             }
 
                             yield item;
                         }
 
-                        if(this.#value === undefined)
+                        if(this.value === undefined)
                         {
-                            this.#value = value;
+                            this.value = value;
                         }
                     }
                 }
@@ -179,14 +194,14 @@ export default class List extends Type
         return resolve(v);
     }
 
-    [Symbol.toPrimitive](hint)
+    public [Symbol.toPrimitive](hint: string): any
     {
         switch (hint)
         {
             case 'transferable':
             case 'clone':
             {
-                return Array.from(this.$.value, i => i[Symbol.toPrimitive](hint));
+                return Array.from(this.$.value, (i: T) => i[Symbol.toPrimitive](hint));
             }
 
             default:
@@ -194,68 +209,68 @@ export default class List extends Type
         }
     }
 
-    get [Symbol.toStringTag]()
+    public get [Symbol.toStringTag](): string
     {
         return `${super[Symbol.toStringTag]}.List`;
     }
 
-    filter(callback)
+    public filter(callback: FilterCallback<T>): List<T>
     {
-        this.#queue.push([ 'filter', callback ]);
+        this.queue.push([ 'filter', callback ]);
 
         return this;
     }
 
-    map(callback)
+    public map<TOut>(callback: MapCallback<T, TOut>): List<T>
     {
-        this.#queue.push([ 'map', callback ]);
+        this.queue.push([ 'map', callback ]);
 
         return this;
     }
 
-    typeCheck(target, method)
+    private typeCheck(target: Array<T>, method: keyof Array<T>): any
     {
-        return (...items) => {
+        return (...items: Array<T>): any => {
             if(items.some(i => (i instanceof this.$.type) === false))
             {
                 throw new Error(`Not all items are of type '${this.$.type.name}'`);
             }
 
-            return target[method].apply(target, this.normalize(items));
+            return (target[method]! as Function).apply(target, this.normalize(items));
         }
     }
 
-    normalize(items)
+    private normalize(items: Array<T>)
     {
-        return items.map(i => i?.[Symbol.toStringTag]?.startsWith('Type') ? i : new this.$.type(i));
+        return items.map((i: T) => i?.[Symbol.toStringTag]?.startsWith('Type') ? i : new this.$.type(i));
     }
 
-    static [Symbol.hasInstance](v)
+    public static [Symbol.hasInstance](v: Array<any>|List<any>): boolean
     {
         return Array.isArray(v) || v.constructor === this;
     }
 
-    get [Symbol.iterator]()
+    public *[Symbol.iterator](): Iterable<T>
     {
-        return this.$.value[property].bind(this.$.value);
+        yield* this.$.value as Array<T>;
     }
 
-    async *[Symbol.asyncIterator]()
+    public async *[Symbol.asyncIterator](): AsyncIterable<any>
     {
         outer:
-        for(let item of this.$.value)
+        for(let item of this.$.value as Array<T>)
         {
             if(item.constructor.name === 'Any')
             {
                 item = item.$.value;
             }
 
-            for(const [method, callback] of this.#queue)
+            for(const [method, callback] of this.queue)
             {
                 switch (method)
                 {
                     case 'filter':
-                        if(Boolean(await callback(item)) === false)
+                        if(Boolean(await (callback as FilterCallback<T>)(item)) === false)
                         {
                             continue outer;
                         }
@@ -263,7 +278,7 @@ export default class List extends Type
                         break;
 
                     case 'map':
-                        item = await callback(item);
+                        item = await (callback as MapCallback<T, any>)(item);
 
                         break;
                 }
@@ -272,16 +287,11 @@ export default class List extends Type
             yield item;
         }
 
-        this.#queue = [];
+        this.queue = [];
     }
 
-    static type(t)
+    public static type<T extends IType>(t: Constructor<T>): typeof Type
     {
-        if((t.prototype instanceof Type) === false)
-        {
-            throw new Error(`expected '${Type.name}' got '${t.name}' instead`);
-        }
-
         return this._configure('type', t);
     }
 }

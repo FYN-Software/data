@@ -1,0 +1,1 @@
+{"version":3,"file":"ownsMany.d.ts","sourceRoot":"","sources":["../../src/relation/ownsMany.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,MAAM,eAAe,CAAC;AACrC,OAAO,KAAK,MAAM,mBAAmB,CAAC;AAEtC,MAAM,CAAC,OAAO,OAAO,QAAQ,CAAC,CAAC,SAAS,KAAK,CAAC,CAAC,CAAC,CAAE,SAAQ,QAAQ,CAAC,CAAC,CAAC;IAEjE,MAAM,KAAK,IAAI,YAGd;CACJ"}
