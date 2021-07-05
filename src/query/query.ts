@@ -1,16 +1,12 @@
-import QueuedPromise from '@fyn-software/core/queuedPromise';
-import IQuery, { Order, Method } from './iQuery';
-import IModel from '../model/iModel.js';
-
-export { Order };
-
-export default class Query<T extends IModel<T>> implements IQuery<T>
+export default class Query<T extends IModel<T>> extends EventTarget implements IQuery<T>
 {
     private readonly _target: T;
     private readonly _methods: Array<Method> = [];
 
     public constructor(target: T)
     {
+        super();
+
         this._target = target;
     }
 
@@ -28,7 +24,7 @@ export default class Query<T extends IModel<T>> implements IQuery<T>
         return this._methods;
     }
 
-    public find(args: object = {}): QueuedPromise
+    public find(args: object = {}): IQueuedPromise
     {
         return this.limit(1).target.find(this, args);
     }

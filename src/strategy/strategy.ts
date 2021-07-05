@@ -1,5 +1,3 @@
-
-
 export default abstract class Strategy<T extends IModel<T>> implements IStrategy<T>
 {
     public owner: IModel<T> | undefined;

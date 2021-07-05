@@ -1,7 +1,3 @@
-import ISchema from './iSchema';
-import ISource from '../source/iSource.js';
-import IQuery from '../query/iQuery.js';
-import IModel from '../model/iModel.js';
 export default abstract class Schema implements ISchema {
     private _source;
     get source(): ISource<any> | undefined;

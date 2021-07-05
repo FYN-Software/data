@@ -1,16 +1,14 @@
-import Type from '../type/type';
+type Operator = 'ASC'|'DESC'|'='|'!='|'>'|'>='|'<'|'<=';
 
-export default class Field<T extends Type>
+export default class Field<T>
 {
     private readonly _name: string;
-    private readonly _type: Constructor<T>;
-    private _operator: string = '';
+    private _operator: Operator|undefined;
     private _value: any;
 
-    public constructor(name: string, type: Constructor<T>)
+    public constructor(name: string)
     {
         this._name = name;
-        this._type = type;
     }
 
     public [Symbol.toPrimitive](hint: string): string|Field<T>
@@ -90,12 +88,7 @@ export default class Field<T extends Type>
         return this._name;
     }
 
-    public get type(): Constructor<T>
-    {
-        return this._type;
-    }
-
-    public get operator(): string
+    public get operator(): Operator|undefined
     {
         return this._operator;
     }

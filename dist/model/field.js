@@ -1,8 +1,6 @@
 export default class Field {
-    constructor(name, type) {
-        this._operator = '';
+    constructor(name) {
         this._name = name;
-        this._type = type;
     }
     [Symbol.toPrimitive](hint) {
         if (hint === 'string') {
@@ -50,9 +48,6 @@ export default class Field {
     }
     get name() {
         return this._name;
-    }
-    get type() {
-        return this._type;
     }
     get operator() {
         return this._operator;

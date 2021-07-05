@@ -1,10 +1,9 @@
-import Type from '../type/type';
-export default class Field<T extends Type> {
+declare type Operator = 'ASC' | 'DESC' | '=' | '!=' | '>' | '>=' | '<' | '<=';
+export default class Field<T> {
     private readonly _name;
-    private readonly _type;
     private _operator;
     private _value;
-    constructor(name: string, type: Constructor<T>);
+    constructor(name: string);
     [Symbol.toPrimitive](hint: string): string | Field<T>;
     isEqualTo(value: any): Field<T>;
     isNotEqualTo(value: any): Field<T>;
@@ -15,8 +14,8 @@ export default class Field<T extends Type> {
     get asc(): Field<T>;
     get desc(): Field<T>;
     get name(): string;
-    get type(): Constructor<T>;
-    get operator(): string;
+    get operator(): Operator | undefined;
     get value(): any;
 }
+export {};
 //# sourceMappingURL=field.d.ts.map

@@ -1,9 +1,3 @@
-import IConnection from '../connection/iConnection';
-import IAdapter from '../adapter/iAdapter';
-import ISchema from '../schema/iSchema';
-import ISource from './iSource';
-import IQuery from '../query/iQuery';
-import IModel from '../model/iModel';
 export default class Source<T extends IModel<T>> implements ISource<T> {
     private _owner;
     private readonly _connection;

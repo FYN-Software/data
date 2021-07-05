@@ -21,9 +21,7 @@ export default class extends Type {
         if (typeof value !== 'object') {
             value = {};
         }
-        // NOTE(Chris Kruining) Make sure to copy in order to break references...
         const returnValue = { ...value };
-        // NOTE(Chris Kruining) Check and copy properties to internal value
         for (const [k, v] of Object.entries(this.$.template)) {
             const property = new v(value[k] ?? undefined);
             if ((property instanceof v) === false) {
@@ -53,7 +51,6 @@ export default class extends Type {
                 enumerable: true,
             });
         }
-        // copy over the models getters to the internal value
         for (const [name, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(this.$.template))) {
             if (descriptor.get === undefined) {
                 continue;

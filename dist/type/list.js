@@ -59,7 +59,6 @@ export default class List extends Type {
                     return v;
                 }
                 const self = this;
-                //TODO(Chris Kruining) This should probably be it's own class (in it's own file)
                 return new class Iterable {
                     async find(precondition) {
                         for await (const item of this) {

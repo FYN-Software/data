@@ -1,15 +1,11 @@
 import QueuedPromise from '@fyn-software/core/queuedPromise';
 import Field from './field';
-import Query, { Order } from '../query/query';
+import Query  from '../query/query';
 import HasMany from '../relation/hasMany';
 import HasOne from '../relation/hasOne';
 import OwnsMany from '../relation/ownsMany';
 import OwnsOne from '../relation/ownsOne';
-import ObjectType, { ObjectTemplate } from '../type/object';
-import IModel from './iModel.js';
-import ISource from '../source/iSource';
-import IStrategy from '../strategy/iStrategy';
-import IQuery from '../query/iQuery';
+
 
 type MapWithDefault<T> = {
     default: T;
@@ -21,10 +17,10 @@ export type SourceMap<T extends IModel<T>> = MapWithDefault<ISource<T>>;
 export type ModelConstructor<T extends IModel<T>> = Constructor<T> & {
     sources: SourceMap<T>;
     strategies?: StrategyMap<T>;
-    properties: ObjectTemplate,
+    properties: { [key: string]: any },
 };
 
-export default abstract class Model<T extends IModel<T> & Model<T>> extends ObjectType implements IModel<T>
+export default abstract class Model<T extends IModel<T> & Model<T>> implements IModel<T>
 {
     static get properties()
     {
@@ -80,8 +76,6 @@ export default abstract class Model<T extends IModel<T> & Model<T>> extends Obje
 
     protected constructor(value: any)
     {
-        super(value);
-
         const constructor = this.constructor as ModelConstructor<any>;
 
         if(constructor.strategies !== undefined)
@@ -104,7 +98,7 @@ export default abstract class Model<T extends IModel<T> & Model<T>> extends Obje
 
     public toTransferable()
     {
-        return this[Symbol.toPrimitive]('transferable');
+        return null;//this[Symbol.toPrimitive]('transferable');
     }
 
     public async *fetch(query: IQuery<T>, args: object): AsyncGenerator<object, void, void>
@@ -132,7 +126,7 @@ export default abstract class Model<T extends IModel<T> & Model<T>> extends Obje
     {
         try
         {
-            await Array.fromAsync(this.fetch(new Query(this)[this.new ? 'insert' : 'update'](this.$.value), {}));
+            await Array.fromAsync(this.fetch(new Query(this)[this.new ? 'insert' : 'update'](this), {}));
 
             return true;
         }
@@ -231,41 +225,5 @@ export default abstract class Model<T extends IModel<T> & Model<T>> extends Obje
     public static ownsOne<T extends IModel<T>>(this: Constructor<T>, target: ModelConstructor<T>)
     {
         return OwnsOne.ownedBy(this).targets(target);
-    }
-
-    public static withSources<T extends IModel<T>>(sources: SourceMap<T>): typeof Model
-    {
-        return this._configure('sources', sources) as unknown as typeof Model;
-    }
-
-    public static initialize<T extends Model<T>>(model: ModelConstructor<T>)
-    {
-        if((model.prototype instanceof this) === false)
-        {
-            throw new Error(`Expected a '${this.name}', got '${model}' instead`);
-        }
-
-        for(const [ name, type ] of Object.entries(model.properties))
-        {
-            Object.defineProperty(model, name, {
-                value: new Field(name, type),
-                writable: false,
-                enumerable: true,
-            });
-        }
-
-        const properties = { ...model.properties };
-
-        for(const [ name, descriptor ] of Object.entries(Object.getOwnPropertyDescriptors(model.prototype)))
-        {
-            if (descriptor.get === undefined)
-            {
-                continue;
-            }
-
-            Object.defineProperty(properties, name, descriptor);
-        }
-
-        return Model.withSources(model.sources).define(properties);
     }
 }

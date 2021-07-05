@@ -1,7 +1,6 @@
-import { Order } from './iQuery';
-export { Order };
-export default class Query {
+export default class Query extends EventTarget {
     constructor(target) {
+        super();
         this._methods = [];
         this._target = target;
     }

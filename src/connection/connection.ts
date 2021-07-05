@@ -1,6 +1,3 @@
-import IConnection from './iConnection';
-import ISource from '../source/iSource';
-
 export default abstract class Connection implements IConnection
 {
     private _source: ISource<any>|undefined;

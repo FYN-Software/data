@@ -1,14 +1,11 @@
 import QueuedPromise from '@fyn-software/core/queuedPromise';
-import Field from './field';
 import Query from '../query/query';
 import HasMany from '../relation/hasMany';
 import HasOne from '../relation/hasOne';
 import OwnsMany from '../relation/ownsMany';
 import OwnsOne from '../relation/ownsOne';
-import ObjectType from '../type/object';
-export default class Model extends ObjectType {
+export default class Model {
     constructor(value) {
-        super(value);
         this._strategies = new Map();
         this._strategy = 'default';
         this._sources = new Map();
@@ -58,7 +55,7 @@ export default class Model extends ObjectType {
         this._raw = value;
     }
     toTransferable() {
-        return this[Symbol.toPrimitive]('transferable');
+        return null;
     }
     async *fetch(query, args) {
         const source = this._strategies.get(this._strategy)
@@ -75,7 +72,7 @@ export default class Model extends ObjectType {
     }
     async save() {
         try {
-            await Array.fromAsync(this.fetch(new Query(this)[this.new ? 'insert' : 'update'](this.$.value), {}));
+            await Array.fromAsync(this.fetch(new Query(this)[this.new ? 'insert' : 'update'](this), {}));
             return true;
         }
         catch (e) {
@@ -146,28 +143,5 @@ export default class Model extends ObjectType {
     }
     static ownsOne(target) {
         return OwnsOne.ownedBy(this).targets(target);
-    }
-    static withSources(sources) {
-        return this._configure('sources', sources);
-    }
-    static initialize(model) {
-        if ((model.prototype instanceof this) === false) {
-            throw new Error(`Expected a '${this.name}', got '${model}' instead`);
-        }
-        for (const [name, type] of Object.entries(model.properties)) {
-            Object.defineProperty(model, name, {
-                value: new Field(name, type),
-                writable: false,
-                enumerable: true,
-            });
-        }
-        const properties = { ...model.properties };
-        for (const [name, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(model.prototype))) {
-            if (descriptor.get === undefined) {
-                continue;
-            }
-            Object.defineProperty(properties, name, descriptor);
-        }
-        return Model.withSources(model.sources).define(properties);
     }
 }

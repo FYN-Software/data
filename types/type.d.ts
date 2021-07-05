@@ -6,35 +6,12 @@ declare enum Order
     desc,
 }
 
-declare interface IQueuedPromise
+declare interface IRelation
 {
 
 }
 
-declare interface TypeConfig
-{
-    getter?: (value: any) => any;
-    setter?: (value: any) => any;
-    value?: any;
-    [key: string]: any
-}
-
-declare interface IType extends EventTarget
-{
-    readonly $: TypeConfig;
-    readonly [Symbol.toStringTag]: string;
-
-    [Symbol.toPrimitive](hint: string): any;
-    setValue<T>(v: T): Promise<T>;
-}
-
-declare interface TypeConstructor extends Constructor<IType>
-{
-    new (): IType;
-    config: TypeConfig;
-}
-
-declare interface IQuery<T extends IModel<T>> extends IType
+declare interface IQuery<T extends IModel<T>>
 {
     readonly target: T
     readonly methods: Array<Method>
@@ -52,12 +29,11 @@ declare interface IQuery<T extends IModel<T>> extends IType
     limit(...args: Array<any>): IQuery<T>;
 }
 
-declare interface IModel<T extends IModel<T>> extends IType
+declare interface IModel<T extends IModel<T>>
 {
     source: any;
     new: boolean;
     raw: boolean;
-    readonly $: { [key: string]: any };
 
     fetch(query: IQuery<T>, args: object): AsyncGenerator<object, void, void>;
 
@@ -65,9 +41,42 @@ declare interface IModel<T extends IModel<T>> extends IType
     findAll(query: IQuery<T>, args?: object): AsyncGenerator<T|object, void, void>;
 }
 
+declare interface ISource<T extends IModel<T>>
+{
+    owner: IModel<T>|undefined;
+    readonly connection: IConnection;
+    readonly adapter: IAdapter;
+    readonly schema: ISchema;
+
+    fetch(query: IQuery<T>, args: object): AsyncGenerator<object, void, void>;
+}
+
 declare interface IStrategy<T extends IModel<T>>
 {
     owner: IModel<T>|undefined;
 
     fetch(query: IQuery<T>, args: object): AsyncGenerator<object, void, void>;
+}
+
+declare interface IConnection
+{
+    source: ISource<any>|undefined;
+    fetch(query: any, args?: object): AsyncGenerator<any, void, void>;
+}
+
+declare interface ISchema
+{
+    source: ISource<any>|undefined;
+    prepare<T extends IModel<T>>(query: IQuery<T>, args?: object): Promise<any>;
+    map(data: AsyncGenerator<object, void, void>): AsyncGenerator<object, void, void>;
+}
+
+declare interface IAdapter
+{
+    source: ISource<any>|undefined;
+
+    from(data: AsyncGenerator<any, void, void>): AsyncGenerator<object, void, void>;
+    to(data: AsyncGenerator<any, void, void>): AsyncGenerator<any, void, void>;
+
+    compile(query: any): any;
 }

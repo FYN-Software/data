@@ -1,5 +1,3 @@
-import IAdapter from './iAdapter';
-import ISource from '../source/iSource.js';
 declare type Converter<TIn, TOut> = (item: AsyncGenerator<TIn, void, void>) => AsyncGenerator<TOut, void, void>;
 declare type AdapterConfig = {
     from: Converter<any, object>;
