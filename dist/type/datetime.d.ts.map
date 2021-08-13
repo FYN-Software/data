@@ -1,1 +1,0 @@
-{"version":3,"file":"datetime.d.ts","sourceRoot":"","sources":["../../src/type/datetime.ts"],"names":[],"mappings":"AAAA,OAAO,IAAI,MAAM,QAAQ,CAAC;AAE1B,MAAM,CAAC,OAAO,MAAO,SAAQ,IAAI;gBAEV,KAAK,EAAE,IAAI;IAK9B,IAAW,CAAC,MAAM,CAAC,WAAW,CAAC,IAAI,MAAM,CAGxC;CACJ"}

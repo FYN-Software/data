@@ -1,7 +1,8 @@
 export default class Query extends EventTarget {
+    _target;
+    _methods = [];
     constructor(target) {
         super();
-        this._methods = [];
         this._target = target;
     }
     *[Symbol.iterator]() {

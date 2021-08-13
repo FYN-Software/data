@@ -1,13 +1,9 @@
 import Stream from '@fyn-software/core/stream';
 export default class Source {
-    constructor(connection, adapter, schema) {
-        this._connection = connection;
-        this._adapter = adapter;
-        this._schema = schema;
-        connection.source = this;
-        adapter.source = this;
-        schema.source = this;
-    }
+    _owner;
+    _connection;
+    _adapter;
+    _schema;
     get connection() {
         return this._connection;
     }
@@ -25,6 +21,14 @@ export default class Source {
             throw new Error(`expected and instance of a model, got 'undefined' instead`);
         }
         this._owner = s;
+    }
+    constructor(connection, adapter, schema) {
+        this._connection = connection;
+        this._adapter = adapter;
+        this._schema = schema;
+        connection.source = this;
+        adapter.source = this;
+        schema.source = this;
     }
     async *fetch(query, args) {
         yield* Stream.from(await this._schema.prepare(query, args))

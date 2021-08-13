@@ -1,11 +1,12 @@
 export default class Schema {
-    constructor() {
-    }
+    _source;
     get source() {
         return this._source;
     }
     set source(s) {
         this._source = s;
+    }
+    constructor() {
     }
     async prepare(query, args = {}) {
         return query;

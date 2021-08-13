@@ -1,11 +1,12 @@
 export default class Connection {
-    constructor() {
-    }
+    _source;
     get source() {
         return this._source;
     }
     set source(s) {
         this._source = s;
+    }
+    constructor() {
     }
     async *fetch(query, args = {}) {
     }

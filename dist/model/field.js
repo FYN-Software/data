@@ -1,4 +1,7 @@
 export default class Field {
+    _name;
+    _operator;
+    _value;
     constructor(name) {
         this._name = name;
     }

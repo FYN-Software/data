@@ -5,31 +5,18 @@ import HasOne from '../relation/hasOne';
 import OwnsMany from '../relation/ownsMany';
 import OwnsOne from '../relation/ownsOne';
 export default class Model {
-    constructor(value) {
-        this._strategies = new Map();
-        this._strategy = 'default';
-        this._sources = new Map();
-        this._source = 'default';
-        this._raw = false;
-        this._new = true;
-        const constructor = this.constructor;
-        if (constructor.strategies !== undefined) {
-            this._strategies = new Map(Object.entries(constructor.strategies));
-            for (const strategy of this._strategies.values()) {
-                strategy.owner = this;
-            }
-        }
-        this._sources = new Map(Object.entries(constructor.sources));
-        for (const source of this._sources.values()) {
-            source.owner = this;
-        }
-    }
     static get properties() {
         return {};
     }
     static get sources() {
         throw new Error(`Not implemented`);
     }
+    _strategies = new Map();
+    _strategy = 'default';
+    _sources = new Map();
+    _source = 'default';
+    _raw = false;
+    _new = true;
     get strategy() {
         return this._source;
     }
@@ -53,6 +40,19 @@ export default class Model {
     }
     set raw(value) {
         this._raw = value;
+    }
+    constructor(value) {
+        const constructor = this.constructor;
+        if (constructor.strategies !== undefined) {
+            this._strategies = new Map(Object.entries(constructor.strategies));
+            for (const strategy of this._strategies.values()) {
+                strategy.owner = this;
+            }
+        }
+        this._sources = new Map(Object.entries(constructor.sources));
+        for (const source of this._sources.values()) {
+            source.owner = this;
+        }
     }
     toTransferable() {
         return null;
